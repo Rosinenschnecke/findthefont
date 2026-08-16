@@ -213,3 +213,159 @@ const CATEGORY_LABELS = {
   display: 'Plakatschrift',
   script:  'Schreibschrift'
 };
+
+/* ------------------------------------------------------------
+   Englische Fassung der Notizen und Herkunftsangaben.
+   Getrennt gehalten, damit der Katalog oben lesbar bleibt.
+   ------------------------------------------------------------ */
+
+const NOTIZ_EN = {
+  'Arial': 'The ubiquitous one. Spot it by the slanted cut on the "t" and the angled terminal of the "e".',
+  'Helvetica': 'The Swiss icon. Its terminals are cut exactly horizontally — Arial cuts them at an angle.',
+  'Helvetica Neue': 'The tidied-up Helvetica, with stroke weights brought into line.',
+  'Verdana': 'Drawn for the screen: wide letters, open counters, an enormous x-height.',
+  'Tahoma': 'Verdana’s narrower sister — same hand, tighter fit.',
+  'Trebuchet MS': 'Tell-tale signs: the "M" with its pointed middle and the curled "1".',
+  'Segoe UI': 'Windows’ house typeface — friendly, rounded, mildly humanist.',
+  'Calibri': 'The one with rounded corners — Word’s default for years.',
+  'Candara': 'A humanist sans with gently flared stems.',
+  'Corbel': 'A clean screen sans that uses old-style figures by default.',
+  'Arial Narrow': 'Arial squeezed — the rescue of every table that ran too wide.',
+  'Arial Black': 'Arial at maximum weight; the counters have almost closed up.',
+  'Franklin Gothic Medium': 'American newspaper gothic with sturdy, slightly irregular strokes.',
+  'Century Gothic': 'Geometric as if drawn with compasses — the "a" is a plain circle with a stem.',
+  'Futura': 'Bauhaus in metal type: circle, triangle, square. The pointed "A" gives it away.',
+  'Gill Sans': 'A British humanist — note the double-storey "g" with its open lower loop.',
+  'Optima': 'Sans serif, but with swelling strokes — half gothic, half roman.',
+  'Avenir': '"The future" in French: Futura’s geometry, softened by humanist detail.',
+  'Avenir Next': 'The reworked Avenir with a wider range of weights.',
+  'Lucida Grande': 'For many years the system typeface of Mac OS X.',
+  'Lucida Sans Unicode': 'A broad, good-natured sans with a huge character set.',
+  'Geneva': 'From the early Macintosh days — Helvetica for 72 dpi.',
+  'Bahnschrift': 'Based on DIN 1451 — the lettering of German motorway signs.',
+  'Ebrima': 'Originally drawn for African writing systems.',
+  'Times New Roman': 'Made for The Times of London — tightly fitted to save newspaper column space.',
+  'Georgia': 'A screen roman with a large x-height and old-style figures that rise and dip.',
+  'Garamond': 'A Renaissance roman: small x-height, high contrast, teardrop terminals.',
+  'Palatino Linotype': 'Calligraphic at heart — you can see the broad-nib pen in every curve.',
+  'Palatino': 'Named after the writing master Giambattista Palatino.',
+  'Book Antiqua': 'A close relative of Palatino — a long-running quarrel in the type trade.',
+  'Baskerville': 'A transitional roman: upright axis, fine hairlines, crisp serifs.',
+  'Didot': 'Neoclassical: extreme stroke contrast, hairline flat serifs. The fashion-magazine face.',
+  'Cambria': 'A robust screen roman with strong, almost rectangular serifs.',
+  'Constantia': 'A serif with a soft, faintly calligraphic hand.',
+  'Bookman Old Style': 'Heavy, wide serifs — on every record sleeve of the seventies.',
+  'Perpetua': 'A restrained British roman with sharply cut serifs.',
+  'Sylfaen': 'Designed for Georgian and Latin script at once.',
+  'Rockwell': 'A slab serif with exactly rectangular, unbracketed serifs.',
+  'Courier New': 'The typewriter face itself — thin, wide, with sprawling serifs.',
+  'Consolas': 'A programming face with rounded corners and a slashed zero.',
+  'Monaco': 'The classic from the Mac terminal.',
+  'Menlo': 'Built on Bitstream Vera Sans Mono; Apple’s terminal standard.',
+  'Lucida Console': 'A compact console face with short ascenders and descenders.',
+  'Andale Mono': 'Drawn for terminals, with a thoroughly unmistakable zero.',
+  'Impact': 'Extremely bold and narrow — the face of every image macro.',
+  'Comic Sans MS': 'Drawn for the speech bubbles of a Microsoft help assistant. Most hated, most used.',
+  'Papyrus': 'Cracked edges, ragged outlines — off-the-shelf parchment.',
+  'Copperplate': 'Tiny serifs on the stroke ends, capitals only — the business-card classic.',
+  'Luminari': 'Playful Renaissance echoes with sweeping curves.',
+  'Herculanum': 'After Roman wall inscriptions from Herculaneum.',
+  'Brush Script MT': 'A brush script with joined letters — the diner look.',
+  'Snell Roundhand': 'After the writing master Charles Snell — English roundhand in its purest form.',
+  'Zapfino': 'Calligraphy with vast flourishes that reach far beyond the line.',
+  'Bradley Hand': 'Digitised from its designer’s actual handwriting.',
+  'Marker Felt': 'Felt pen on paper — thick, slightly frayed strokes.',
+  'Chalkboard SE': 'Chalk on a blackboard, soft and a little wobbly.',
+  'Segoe Script': 'Loosely joined handwriting from the Segoe family.',
+  'Segoe Print': 'Hand-printed block letters, unjoined.',
+  'Ink Free': 'The quickly scribbled note face from Windows 10.',
+  'Gabriola': 'A calligraphic face with plenty of ornamental flourishes.',
+  'Roboto': 'Android’s house typeface — a geometric skeleton with humanist detail.',
+  'Open Sans': 'Open shapes, neutral tone — for years the most used face on the web.',
+  'Lato': '"Lato" is Polish for "summer" — semi-rounded details warm up the gothic.',
+  'Montserrat': 'After the shop signs of the Montserrat quarter in Buenos Aires.',
+  'Poppins': 'Strictly geometric, with perfectly circular counters and a single-storey "a".',
+  'Raleway': 'The give-away: the "W" with crossed middle strokes.',
+  'Nunito': 'Rounded-off terminals — the friendliest sans on the shelf.',
+  'Inter': 'Optimised for screen interfaces: tall x-height, very tight fit.',
+  'Work Sans': 'Drawn for middling text sizes on the web.',
+  'Rubik': 'Slightly rounded corners, originally made for a Chrome Cube project.',
+  'Karla': 'A grotesque with wilful, faintly lopsided details.',
+  'Manrope': 'Half geometric, half neo-grotesque, with even stroke weight.',
+  'Barlow': 'A gently "grounded" sans, inspired by Californian road signage.',
+  'Cabin': 'Leaning on Gill Sans, but with softer curves.',
+  'Quicksand': 'Geometric with strikingly round terminals — as if bent from wire.',
+  'Josefin Sans': 'A very low x-height in the spirit of the 1920s.',
+  'Fira Sans': 'Originally designed for Firefox OS.',
+  'PT Sans': 'Part of a Russian state project for public lettering.',
+  'Titillium Web': 'A student project from Italy with a technical air.',
+  'Exo 2': 'A techy sans with slightly chamfered corners.',
+  'Oswald': 'A condensed face in the tradition of Alternate Gothic.',
+  'Archivo Black': 'A sturdy sans for headlines, after American gothics.',
+  'Anton': 'Ultra-bold and narrow — poster lettering for the biggest headlines.',
+  'Bebas Neue': 'Capitals only, tall and narrow — it has no lowercase at all.',
+  'Playfair Display': 'Neoclassical with high contrast — the web’s fashion-magazine face.',
+  'Merriweather': 'Drawn for screens: large x-height, sturdy serifs, open shapes.',
+  'Lora': 'Calligraphic roots, but with contemporary stroke contrast.',
+  'EB Garamond': 'A digital reconstruction from original Claude Garamond specimens.',
+  'Libre Baskerville': 'Baskerville, widened for the screen.',
+  'Crimson Text': 'Drawn for book setting, in the spirit of old Garamond cuts.',
+  'Cormorant Garamond': 'Very fine hairlines — it only shines at large sizes.',
+  'Vollkorn': 'A German text face in the literal sense — hearty and down to earth.',
+  'Alegreya': 'For long reading, with a deliberately restless rhythm.',
+  'Bitter': 'A slab serif for reading on screen, with faintly angular curves.',
+  'Arvo': 'A geometric slab serif with clean, right-angled serifs.',
+  'Zilla Slab': 'Mozilla’s house typeface — serifs with flattened ends.',
+  'Roboto Slab': 'Roboto’s skeleton, fitted with rectangular serifs.',
+  'PT Serif': 'The serif companion to PT Sans, humanist in feel.',
+  'Noto Serif': 'Part of the "No more Tofu" project — type for every language in the world.',
+  'Source Serif 4': 'Adobe’s open-source roman, after Fournier and Kis.',
+  'Cinzel': 'After Roman capital inscriptions of the first century.',
+  'Abril Fatface': 'A fat Didone in the manner of Victorian advertising posters.',
+  'Roboto Mono': 'Roboto’s letterforms forced onto a fixed width.',
+  'Space Mono': 'A wilful monospace with curved outstrokes — designed for Google Design.',
+  'IBM Plex Mono': 'IBM’s house typeface, echoing the IBM Selectric.',
+  'Inconsolata': 'A programming face inspired by Consolas — but with a character of its own.',
+  'Source Code Pro': 'Adobe’s code face, with especially unambiguous figures.',
+  'JetBrains Mono': 'A raised x-height so that code stays calm at small sizes.',
+  'Cutive Mono': 'An old typewriter air with heavy serifs.',
+  'Nanum Gothic Coding': 'A Korean coding face with very matter-of-fact Latin letters.',
+  'Lobster': 'A fat brush script with swing — the internet’s café sign.',
+  'Pacifico': 'Fifties surf culture, written with a brush.',
+  'Dancing Script': 'A lively script whose letters bounce a little up and down.',
+  'Great Vibes': 'A fine English roundhand with long flourishes.',
+  'Satisfy': 'A loose brush script on an irregular baseline.',
+  'Caveat': 'Handwriting as if biroed into a notebook.',
+  'Indie Flower': 'A rounded print hand with thick, soft strokes.',
+  'Shadows Into Light': 'A narrow hand slanting to the right.',
+  'Permanent Marker': 'Thick felt pen on cardboard — moving-box aesthetics.',
+  'Amatic SC': 'Extremely narrow, hand-drawn capitals.',
+  'Righteous': 'Art deco echoes in closed, geometric shapes.',
+  'Orbitron': 'Science fiction on a grid — strictly geometric, techy.',
+  'Fredoka': 'Plump, rounded shapes, often used for children’s books and games.',
+  'Alfa Slab One': 'A very fat slab serif in the style of old circus posters.'
+};
+
+/* Nur die Herkunftsangaben, die nicht sprachneutral sind. */
+const HERKUNFT_EN = {
+  'Garamond': 'after Claude Garamond, 16th c.',
+  'Bookman Old Style': 'after A. C. Phemister, 1858'
+};
+
+/** Notiz zur Schrift in der eingestellten Sprache. */
+function notizVon(f) {
+  return (typeof Sprache !== 'undefined' && Sprache.aktuell() === 'en' && NOTIZ_EN[f.n])
+    ? NOTIZ_EN[f.n] : f.t;
+}
+
+/** Herkunftsangabe in der eingestellten Sprache. */
+function herkunftVon(f) {
+  return (typeof Sprache !== 'undefined' && Sprache.aktuell() === 'en' && HERKUNFT_EN[f.n])
+    ? HERKUNFT_EN[f.n] : f.m;
+}
+
+/** Gattungsname in der eingestellten Sprache. */
+function gattungVon(f) {
+  return (typeof Sprache !== 'undefined')
+    ? Sprache.t('gattung.' + f.cat) : CATEGORY_LABELS[f.cat];
+}

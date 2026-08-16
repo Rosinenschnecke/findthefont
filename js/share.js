@@ -90,10 +90,11 @@ const Ergebnisbild = (() => {
     /* Punktzahl groß in die Mitte des Kopfes */
     ctx.fillStyle = TINTE;
     schrift(ctx, 150);
-    ctx.fillText(ergebnis.punkte.toLocaleString('de-DE'), BREITE / 2, 372);
+    ctx.fillText(ergebnis.punkte.toLocaleString(
+      Sprache.aktuell() === 'en' ? 'en-GB' : 'de-DE'), BREITE / 2, 372);
     schrift(ctx, 24);
     ctx.fillStyle = GRAU;
-    ctx.fillText('PUNKTE', BREITE / 2, 410);
+    ctx.fillText(Sprache.t('tag.bildPunkte'), BREITE / 2, 410);
 
     if (ergebnis.rang) {
       schrift(ctx, 44);
@@ -122,7 +123,7 @@ const Ergebnisbild = (() => {
 
     schrift(ctx, 20);
     ctx.fillStyle = GRAU;
-    ctx.fillText('ZAHL = STUFE, AUF DER ERKANNT WURDE', BREITE / 2, y + kante + 42);
+    ctx.fillText(Sprache.t('tag.bildStufe'), BREITE / 2, y + kante + 42);
 
     /* Die Schriften der Runde, jede in sich selbst gesetzt */
     let zeileY = y + kante + 116;

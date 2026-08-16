@@ -7,21 +7,20 @@
 
   /* ---------------- Die sieben Stufen ---------------- */
 
+  /* Die Namen der Stufen und die gezeigten Wörter stehen in
+     js/i18n.js, damit die englische Fassung nicht mit deutschen
+     Wörtern gesetzt wird. */
   const STUFEN = [
-    { name: 'Punkt',        wert: 1000, grad: 900, probe: () => '.' },
-    { name: 'Komma',        wert: 800,  grad: 820, probe: () => ',' },
-    { name: 'Buchstabe',    wert: 620,  grad: 520, probe: () => waehle(['a', 'g', 'R', 'e', 'k', 'y', 'S', 'Q']) },
-    { name: 'Kurzes Wort',  wert: 460,  grad: 320, probe: () => waehle(['Typ', 'Hut', 'Zug', 'Reh', 'Gas', 'Eis', 'Blei']) },
-    { name: 'Langes Wort',  wert: 320,  grad: 200, probe: () => waehle(['Schriftsetzerei', 'Buchstabenkasten', 'Druckerpresse', 'Federzeichnung', 'Handsatzregal']) },
-    { name: 'Kurzer Satz',  wert: 200,  grad: 120, probe: () => waehle([
-        'Der Setzer greift zur Lupe.',
-        'Die Presse klappert im Hinterhof.',
-        'Ein Blatt Papier, frisch gespannt.',
-        'Das Farbband ist fast verbraucht.'
-      ]) },
-    { name: 'Ganzes Alphabet', wert: 110, grad: 84,
-      probe: () => 'Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. 0123456789' }
+    { wert: 1000, grad: 900, probe: () => '.' },
+    { wert: 800,  grad: 820, probe: () => ',' },
+    { wert: 620,  grad: 520, probe: () => waehle(Sprache.proben().buchstaben) },
+    { wert: 460,  grad: 320, probe: () => waehle(Sprache.proben().kurz) },
+    { wert: 320,  grad: 200, probe: () => waehle(Sprache.proben().lang) },
+    { wert: 200,  grad: 120, probe: () => waehle(Sprache.proben().satz) },
+    { wert: 110,  grad: 84,  probe: () => Sprache.proben().pangramm }
   ];
+
+  const stufenname = i => t('stufe.' + (i + 1));
 
   /* ---------------- Schwierigkeitsgrade ---------------- */
 
@@ -32,52 +31,47 @@
      ersetzt, damit die Auswahl nicht kleiner wird. */
   const SCHWIERIGKEIT = {
     leicht: {
-      name: 'Leicht', optionen: 4, zeit: 0, faktor: 1.0,
+      schluessel: 'schwierigkeit.leicht', optionen: 4, zeit: 0, faktor: 1.0,
       bekanntheit: 1, gleicheGattung: false, fehlversuche: 1, nachruecken: false
     },
     mittel: {
-      name: 'Mittel', optionen: 5, zeit: 60, faktor: 1.4,
+      schluessel: 'schwierigkeit.mittel', optionen: 5, zeit: 60, faktor: 1.4,
       bekanntheit: 2, gleicheGattung: false, fehlversuche: 1, nachruecken: false
     },
     schwer: {
-      name: 'Schwer', optionen: 6, zeit: 40, faktor: 1.9,
+      schluessel: 'schwierigkeit.schwer', optionen: 6, zeit: 40, faktor: 1.9,
       bekanntheit: 3, gleicheGattung: true, fehlversuche: 2, nachruecken: true
     },
     experte: {
-      name: 'Experte', optionen: 8, zeit: 25, faktor: 2.5,
+      schluessel: 'schwierigkeit.experte', optionen: 8, zeit: 25, faktor: 2.5,
       bekanntheit: 3, gleicheGattung: true, fehlversuche: 2, nachruecken: true
     },
     /* Für alle gleich, deshalb feste Regeln und nicht in der
        Schwierigkeitswahl aufgeführt. */
     taeglich: {
-      name: 'Schrift des Tages', optionen: 5, zeit: 45, faktor: 1.0,
+      schluessel: 'tag.titel', optionen: 5, zeit: 45, faktor: 1.0,
       bekanntheit: 2, gleicheGattung: false, fehlversuche: 1, nachruecken: false,
       versteckt: true
     }
   };
 
   const WAEHLBAR = Object.entries(SCHWIERIGKEIT).filter(([, s]) => !s.versteckt);
+  const gradname = key => t(SCHWIERIGKEIT[key].schluessel);
 
   const RUNDEN_JE_SPIEL = 5;
   const FEHLERKOSTEN = 120;
   const MINDESTPUNKTE = 30;
 
   const RAENGE = [
-    { ab: 0.90, titel: 'Schriftexperte',   text: 'Beeindruckend. Du erkennst Schriften an fast nichts.' },
-    { ab: 0.75, titel: 'Sehr sicher',      text: 'Starke Runde — nur wenige Stufen zu viel aufgedeckt.' },
-    { ab: 0.58, titel: 'Gut im Blick',     text: 'Solide. Achte beim nächsten Mal früher auf die Serifen.' },
-    { ab: 0.40, titel: 'Auf dem Weg',      text: 'Die Richtung stimmt. Punkt und Komma verraten oft mehr, als man denkt.' },
-    { ab: 0.22, titel: 'Noch am Üben',     text: 'Schau dir im Trainingslager ein paar Schriften in Ruhe an.' },
-    { ab: 0,    titel: 'Erster Versuch',   text: 'Aller Anfang ist schwer. Im Trainingslager geht es ohne Punktedruck.' }
+    { ab: 0.90, schluessel: 'rang.experte' },
+    { ab: 0.75, schluessel: 'rang.sicher' },
+    { ab: 0.58, schluessel: 'rang.gut' },
+    { ab: 0.40, schluessel: 'rang.weg' },
+    { ab: 0.22, schluessel: 'rang.ueben' },
+    { ab: 0,    schluessel: 'rang.erster' }
   ];
 
-  const ORDEN = [
-    { id: 'blind',   name: 'Nur ein Punkt',    text: 'Eine Schrift allein am Punkt erkannt.' },
-    { id: 'sparsam', name: 'Ohne Hilfe',       text: 'Eine Runde ohne einmal aufzudecken gelöst.' },
-    { id: 'rein',    name: 'Fehlerfrei',       text: 'Keine einzige falsche Antwort im ganzen Spiel.' },
-    { id: 'serie',   name: 'Alle fünf',        text: 'Alle fünf Schriften richtig bestimmt.' },
-    { id: 'lupe',    name: 'Nicht aufgegeben', text: 'Eine Schrift erst auf der letzten Stufe geknackt.' }
-  ];
+  const ORDEN = ['blind', 'sparsam', 'rein', 'serie', 'lupe'];
 
   /* ---------------- Zustand ---------------- */
 
@@ -100,7 +94,9 @@
   /* ---------------- Helfer ---------------- */
 
   const $ = id => document.getElementById(id);
-  const zahl = n => n.toLocaleString('de-DE');
+  const gebiet = () => (Sprache.aktuell() === 'en' ? 'en-GB' : 'de-DE');
+  const zahl = n => n.toLocaleString(gebiet());
+  const komma = n => n.toFixed(1).replace('.', Sprache.aktuell() === 'en' ? '.' : ',');
 
   /* Im Tagesmodus kommt der Zufall aus dem Datum, damit alle
      dieselbe Aufgabe bekommen. Sonst der übliche Zufall. */
@@ -144,7 +140,8 @@
 
   let rueckfrageAntwort = null;
 
-  function frage(titel, text, jaText = 'Ja') {
+  function frage(titel, text, jaText) {
+    jaText = jaText || t('frage.ja');
     $('rueckfrage-titel').textContent = titel;
     $('rueckfrage-text').textContent = text;
     $('rueckfrage-ja').textContent = jaText;
@@ -162,9 +159,11 @@
 
   async function hochfahren() {
     const balken = $('lade-balken');
-    const texte = ['Einen Moment …', 'Schriften werden geprüft …', 'Gleich geht es los …'];
-    let t = 0;
-    const ticker = setInterval(() => { $('lade-text').textContent = texte[++t % texte.length]; }, 1100);
+    const texte = ['laden.moment', 'laden.pruefen', 'laden.gleich'];
+    let schritt = 0;
+    const ticker = setInterval(() => {
+      $('lade-text').textContent = t(texte[++schritt % texte.length]);
+    }, 1100);
 
     const { stock, missing, total } = await FontDepot.open(p => {
       balken.style.width = Math.round(p * 100) + '%';
@@ -173,11 +172,12 @@
     clearInterval(ticker);
     spiel.lager = stock;
 
-    $('lager-fuss').textContent = `${stock.length} von ${total} Schriften verfügbar`;
+    spiel.bestand = { n: stock.length, gesamt: total };
+    $('lager-fuss').textContent = t('fuss.bestand', spiel.bestand);
 
     if (stock.length < 8) {
-      $('lade-text').textContent = 'Zu wenige Schriften gefunden.';
-      $('lager-fuss').textContent = 'Zu wenige Schriften geladen.';
+      $('lade-text').textContent = t('laden.zuwenig');
+      $('lager-fuss').textContent = t('fuss.zuwenig');
       $('karte-spiel').disabled = true;
       $('karte-training').disabled = true;
       zeigeSchirm('menue');
@@ -202,7 +202,7 @@
     $('bestenliste').innerHTML = WAEHLBAR.map(([key, s]) => {
       const b = holeBest(key);
       return `<li class="bestwerte__zeile">
-        <span class="bestwerte__name">${s.name}</span>
+        <span class="bestwerte__name">${gradname(key)}</span>
         <span class="bestwerte__wert">${b ? zahl(b) : '—'}</span>
       </li>`;
     }).join('');
@@ -213,12 +213,12 @@
   function baueStufenwahl() {
     $('stufenwahl').innerHTML = WAEHLBAR.map(([key, s]) => `
       <button type="button" class="stufenkarte${key === spiel.stufe ? ' stufenkarte--aktiv' : ''}" data-stufe="${key}">
-        <span class="stufenkarte__name">${s.name}</span>
+        <span class="stufenkarte__name">${gradname(key)}</span>
         <span class="stufenkarte__daten">
-          <span>${s.optionen} Antworten</span>
-          <span>${s.zeit ? s.zeit + ' s' : 'ohne Zeit'}</span>
-          <span>${s.fehlversuche + 1} Versuche</span>
-          <span>×${s.faktor.toFixed(1).replace('.', ',')}</span>
+          <span>${t('schwierigkeit.antworten', { n: s.optionen })}</span>
+          <span>${s.zeit ? t('schwierigkeit.sekunden', { n: s.zeit }) : t('schwierigkeit.ohneZeit')}</span>
+          <span>${t('schwierigkeit.versuche', { n: s.fehlversuche + 1 })}</span>
+          <span>×${komma(s.faktor)}</span>
         </span>
       </button>`).join('');
 
@@ -238,8 +238,8 @@
     const b = holeBest(spiel.stufe);
     const moeglich = Math.round(RUNDEN_JE_SPIEL * STUFEN[0].wert * SCHWIERIGKEIT[spiel.stufe].faktor);
     $('stufenwahl-bestwert').textContent = b
-      ? `Bestwert ${zahl(b)} von ${zahl(moeglich)} möglichen Punkten`
-      : `Bis zu ${zahl(moeglich)} Punkte möglich`;
+      ? t('schwierigkeit.bestwert', { best: zahl(b), max: zahl(moeglich) })
+      : t('schwierigkeit.moeglich', { max: zahl(moeglich) });
   }
 
   /* ---------------- Anleitung ---------------- */
@@ -248,8 +248,8 @@
     $('anleitung-stufen').innerHTML = STUFEN.map((s, i) => `
       <li class="stufenliste__zeile">
         <span class="stufenliste__nr">${i + 1}</span>
-        <span class="stufenliste__name">${s.name}</span>
-        <span class="stufenliste__wert">${s.wert} Punkte</span>
+        <span class="stufenliste__name">${stufenname(i)}</span>
+        <span class="stufenliste__wert">${t('anleitung.punkteEinheit', { n: s.wert })}</span>
       </li>`).join('');
 
   }
@@ -263,7 +263,7 @@
 
   function baueTrainingsfelder() {
     const optionen = gattungsListe().map(c =>
-      `<option value="${c}">${c === 'alle' ? 'alle Gattungen' : CATEGORY_LABELS[c]}</option>`).join('');
+      `<option value="${c}">${c === 'alle' ? t('training.alleGattungen') : t('gattung.' + c)}</option>`).join('');
     $('training-gattung').innerHTML = optionen;
     $('katalog-gattung').innerHTML = optionen;
     aktualisiereTrainingsanzahl();
@@ -281,8 +281,8 @@
     const noetig = parseInt($('training-optionen').value, 10);
     const genug = n >= Math.max(4, noetig);
     $('training-anzahl').textContent = genug
-      ? `${n} Schriften passen zu dieser Auswahl.`
-      : `Nur ${n} Schriften passen dazu — das reicht nicht für ${noetig} Antworten. Bitte weiter fassen.`;
+      ? t('training.passen', { n })
+      : t('training.zuwenig', { n, noetig });
     $('training-anzahl').classList.toggle('hinweis--warnung', !genug);
     $('training-start').disabled = !genug;
   }
@@ -291,7 +291,7 @@
     const suche = ($('katalog-suche').value || '').trim().toLowerCase();
     const gattung = $('katalog-gattung').value || 'alle';
     const eigener = ($('katalog-text').value || '').trim();
-    const probe = entschaerfe(eigener || 'Hamburgefonstiv');
+    const probe = entschaerfe(eigener || Sprache.proben().katalogprobe);
     const liste = spiel.lager
       .filter(f => (gattung === 'alle' || f.cat === gattung) && f.n.toLowerCase().includes(suche))
       .sort((a, b) => a.n.localeCompare(b.n, 'de'));
@@ -302,18 +302,18 @@
           <span class="katalog__probe" style="font-family:'${f.n}', serif">${probe}</span>
           <span class="katalog__namen">
             <span class="katalog__name">${f.n}</span>
-            <span class="katalog__gattung">${CATEGORY_LABELS[f.cat]}</span>
+            <span class="katalog__gattung">${gattungVon(f)}</span>
           </span>
         </button>
         <div class="katalog__detail" hidden>
-          <p class="katalog__meta">${f.m}</p>
-          <p class="katalog__wissen">${f.t}</p>
+          <p class="katalog__meta">${herkunftVon(f)}</p>
+          <p class="katalog__wissen">${notizVon(f)}</p>
           <p class="katalog__zeile-probe" style="font-family:'${f.n}', serif">
             ${eigener ? probe + '<br>' : ''}ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 . , ; : ! ?
           </p>
         </div>
       </li>`).join('')
-      : '<li class="katalog__leer">Keine Schrift passt zu dieser Suche.</li>';
+      : `<li class="katalog__leer">${t('katalog.leer')}</li>`;
 
     $('katalog').querySelectorAll('.katalog__kopf').forEach(k => {
       k.addEventListener('click', () => {
@@ -358,8 +358,8 @@
     $('loesung-knopf').hidden = modus !== 'training';
     $('training-ende-knopf').hidden = modus !== 'training';
     $('hud-punkte').textContent = modus === 'training' ? '0 / 0' : '0';
-    $('hud-schild-1').textContent = modus === 'training' ? 'Aufgabe' : 'Runde';
-    $('hud-schild-2').textContent = modus === 'training' ? 'Richtig' : 'Punkte';
+    $('hud-schild-1').textContent = t(modus === 'training' ? 'spiel.aufgabe' : 'spiel.runde');
+    $('hud-schild-2').textContent = t(modus === 'training' ? 'spiel.richtig' : 'spiel.punkte');
 
     zeigeSchirm('spiel');
     Sfx.papier();
@@ -409,7 +409,7 @@
     $('hud-runde').textContent = training
       ? String(spiel.rundeNr)
       : `${spiel.rundeNr} / ${RUNDEN_JE_SPIEL}`;
-    $('blatt-kopf-links').textContent = training ? `Aufgabe ${spiel.rundeNr}` : `Runde ${spiel.rundeNr}`;
+    $('blatt-kopf-links').textContent = t(training ? 'spiel.aufgabeNr' : 'spiel.rundeNr', { n: spiel.rundeNr });
     $('aufloesung').hidden = true;
     $('aufdecken-knopf').disabled = false;
     $('loesung-knopf').disabled = false;
@@ -503,17 +503,18 @@
     const stufe = STUFEN[r.stufe];
     const training = spiel.modus === 'training';
 
-    $('blatt-kopf-rechts').textContent = `${r.stufe + 1}/${STUFEN.length} · ${stufe.name}`;
+    $('blatt-kopf-rechts').textContent =
+      t('spiel.stufeVon', { n: r.stufe + 1, gesamt: STUFEN.length, name: stufenname(r.stufe) });
     if (!training) $('hud-wert').textContent = zahl(rundenpunkte());
     aktualisiereStufenleiste();
 
     const letzte = r.stufe === STUFEN.length - 1;
     $('aufdecken-knopf').disabled = letzte || r.beendet;
     $('aufdecken-info').textContent = letzte
-      ? 'alles aufgedeckt'
+      ? t('spiel.alles')
       : training
-        ? STUFEN[r.stufe + 1].name
-        : `${STUFEN[r.stufe + 1].name} · ${zahl(Math.round(rundenwert(r.stufe + 1) * SCHWIERIGKEIT[spiel.stufe].faktor))}`;
+        ? stufenname(r.stufe + 1)
+        : `${stufenname(r.stufe + 1)} · ${zahl(Math.round(rundenwert(r.stufe + 1) * SCHWIERIGKEIT[spiel.stufe].faktor))}`;
 
     const auftrag = { font: r.schrift.n, text: r.proben[r.stufe], grad: stufe.grad };
     if (mitAnimation && !Einstellungen.hole('wenigerBewegung')) {
@@ -525,7 +526,7 @@
 
   function baueStufenleiste() {
     $('stufenleiste').innerHTML = STUFEN.map((s, i) => `
-      <li class="kerbe" title="Stufe ${i + 1}: ${s.name} — ${s.wert} Punkte">
+      <li class="kerbe" title="${i + 1}. ${stufenname(i)} — ${s.wert}">
         <span class="kerbe__marke"></span>
         <span class="kerbe__nr">${i + 1}</span>
       </li>`).join('');
@@ -539,18 +540,18 @@
   }
 
   function baueTastatur() {
-    const t = $('tastatur');
-    t.innerHTML = spiel.runde.optionen.map((f, i) => `
+    const feld = $('tastatur');
+    feld.innerHTML = spiel.runde.optionen.map((f, i) => `
       <button type="button" class="taste" data-i="${i}">
         <span class="taste__kappe">
           <span class="taste__ziffer">${i + 1}</span>
           <span class="taste__name">${f.n}</span>
         </span>
       </button>`).join('');
-    t.querySelectorAll('.taste').forEach(b => {
+    feld.querySelectorAll('.taste').forEach(b => {
       b.addEventListener('click', () => antworte(parseInt(b.dataset.i, 10)));
     });
-    t.dataset.spalten = spiel.runde.optionen.length > 6 ? '4' : (spiel.runde.optionen.length > 4 ? '3' : '2');
+    feld.dataset.spalten = spiel.runde.optionen.length > 6 ? '4' : (spiel.runde.optionen.length > 4 ? '3' : '2');
   }
 
   /* ---------------- Verbleibende Versuche ---------------- */
@@ -572,7 +573,7 @@
     const gesamt = erlaubt + 1;                 // Wahlmöglichkeiten insgesamt
     const offen = gesamt - spiel.runde.fehler.length;
     feld.hidden = false;
-    feld.title = `${offen} von ${gesamt} Versuchen übrig`;
+    feld.title = t('spiel.versucheUebrig', { offen, gesamt });
     feld.innerHTML = Array.from({ length: gesamt }, (_, i) =>
       `<span class="versuch${i < offen ? '' : ' versuch--weg'}"></span>`).join('');
   }
@@ -712,19 +713,19 @@
     const training = spiel.modus === 'training';
 
     $('stempel').className = 'stempel ' + (richtig ? 'stempel--gut' : 'stempel--schlecht');
-    $('stempel-text').textContent = richtig ? 'richtig' : 'falsch';
+    $('stempel-text').textContent = t(richtig ? 'aufloesung.richtig' : 'aufloesung.falsch');
 
     $('aufloesung-vorspann').textContent = richtig
-      ? `Richtig erkannt auf Stufe ${r.stufe + 1} von ${STUFEN.length}`
-      : zeitAbgelaufen ? 'Zeit abgelaufen. Gesucht war'
-      : aufgegeben ? 'Gesucht war'
-      : 'Leider nicht. Gesucht war';
+      ? t('aufloesung.erkanntAuf', { n: r.stufe + 1, gesamt: STUFEN.length })
+      : zeitAbgelaufen ? t('aufloesung.zeitAus')
+      : aufgegeben ? t('aufloesung.gesucht')
+      : t('aufloesung.leider');
 
     $('aufloesung-name').textContent = r.schrift.n;
     $('aufloesung-name').style.fontFamily = `"${r.schrift.n}", serif`;
-    $('aufloesung-meta').textContent = `${CATEGORY_LABELS[r.schrift.cat]} · ${r.schrift.m}`;
+    $('aufloesung-meta').textContent = `${gattungVon(r.schrift)} · ${herkunftVon(r.schrift)}`;
     $('aufloesung-probe').style.fontFamily = `"${r.schrift.n}", serif`;
-    $('aufloesung-wissen').textContent = r.schrift.t;
+    $('aufloesung-wissen').textContent = notizVon(r.schrift);
 
     const vergleich = $('aufloesung-vergleich');
     if (!richtig && gewaehlt) {
@@ -736,14 +737,15 @@
       vergleich.hidden = true;
     }
 
-    const klammer = r.fehler.length ? ` · ${r.fehler.length}× falsch` : '';
+    const zusatz = r.fehler.length ? t('aufloesung.malFalsch', { n: r.fehler.length }) : '';
 
     $('aufloesung-punkte').textContent = training
-      ? `${spiel.richtige} von ${spiel.rundeNr} richtig${klammer}`
-      : richtig ? `+ ${zahl(punkte)} Punkte${klammer}` : `Keine Punkte für diese Runde${klammer}`;
+      ? t('aufloesung.trainingStand', { richtig: spiel.richtige, gesamt: spiel.rundeNr, zusatz })
+      : richtig ? t('aufloesung.plusPunkte', { n: zahl(punkte), zusatz })
+                : t('aufloesung.keinePunkte', { zusatz });
 
-    $('weiter-knopf').textContent = (!training && spiel.rundeNr >= RUNDEN_JE_SPIEL)
-      ? 'Ergebnis ansehen' : 'Weiter';
+    $('weiter-knopf').textContent = t((!training && spiel.rundeNr >= RUNDEN_JE_SPIEL)
+      ? 'aufloesung.ergebnisAnsehen' : 'aufloesung.weiter');
 
     $('aufloesung').hidden = false;
     spiel.warteAufWeiter = true;
@@ -775,7 +777,30 @@
     if (p.every(x => x.fehler === 0)) ids.push('rein');
     if (p.every(x => x.richtig)) ids.push('serie');
     if (p.some(x => x.richtig && x.stufe === STUFEN.length - 1)) ids.push('lupe');
-    return ORDEN.filter(o => ids.includes(o.id));
+    return ORDEN.filter(id => ids.includes(id));
+  }
+
+  /** Rundenliste des Ergebnisschirms — auch nach Sprachwechsel neu. */
+  function zeichneProtokoll() {
+    $('protokoll').innerHTML = spiel.protokoll.map((p, i) => {
+      const wie = p.richtig
+        ? t('ende.aufStufe', { n: p.stufe + 1 })
+        : p.zeitAbgelaufen ? t('ende.zeitAus') : t('ende.nichtErkannt');
+      const extra = p.fehler ? ' · ' + t('ende.malFalsch', { n: p.fehler }) : '';
+      return `<li class="protokoll__zeile${p.richtig ? '' : ' protokoll__zeile--daneben'}">
+        <span class="protokoll__nr">${i + 1}</span>
+        <span class="protokoll__schrift" style="font-family:'${p.schrift.n}', serif">${p.schrift.n}</span>
+        <span class="protokoll__stufe">${wie}${extra}</span>
+        <span class="protokoll__punkte">${p.punkte ? '+' + zahl(p.punkte) : '—'}</span>
+      </li>`;
+    }).join('');
+  }
+
+  function zeichneOrden() {
+    const orden = verdienteOrden();
+    $('orden').innerHTML = orden.length
+      ? orden.map(id => `<span class="orden__stueck" title="${t('orden.' + id + 'Text')}">${t('orden.' + id)}</span>`).join('')
+      : '';
   }
 
   function zeigeErgebnis() {
@@ -789,36 +814,21 @@
     zeigeSchirm('ende');
     Sfx.stempel();
 
-    $('ende-modus').textContent = s.name;
-    $('zeugnis-rang').textContent = rang.titel;
+    $('ende-modus').textContent = gradname(spiel.stufe);
+    spiel.rangSchluessel = rang.schluessel;
+    $('zeugnis-rang').textContent = t(rang.schluessel);
     zaehleHoch($('zeugnis-punkte'), 0, spiel.punkte, 1100);
 
-    $('protokoll').innerHTML = spiel.protokoll.map((p, i) => {
-      const wie = p.richtig
-        ? `auf Stufe ${p.stufe + 1}`
-        : p.zeitAbgelaufen ? 'Zeit abgelaufen' : 'nicht erkannt';
-      const extra = [];
-      if (p.fehler) extra.push(`${p.fehler}× falsch`);
-      return `<li class="protokoll__zeile${p.richtig ? '' : ' protokoll__zeile--daneben'}">
-        <span class="protokoll__nr">${i + 1}</span>
-        <span class="protokoll__schrift" style="font-family:'${p.schrift.n}', serif">${p.schrift.n}</span>
-        <span class="protokoll__stufe">${wie}${extra.length ? ' · ' + extra.join(' · ') : ''}</span>
-        <span class="protokoll__punkte">${p.punkte ? '+' + zahl(p.punkte) : '—'}</span>
-      </li>`;
-    }).join('');
-
-    const orden = verdienteOrden();
-    $('orden').innerHTML = orden.length
-      ? orden.map(o => `<span class="orden__stueck" title="${o.text}">${o.name}</span>`).join('')
-      : '';
+    zeichneProtokoll();
+    zeichneOrden();
 
     const taeglich = spiel.modus === 'taeglich';
     $('tagesauswertung').hidden = !taeglich;
     $('stufe-wechseln-knopf').hidden = taeglich;
     $('nochmal-knopf').hidden = taeglich;          // einmal am Tag
     $('ende-modus').textContent = taeglich
-      ? `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`
-      : s.name;
+      ? `${t('tag.titel')} · ${Tagesspiel.lesbar(spiel.datum)}`
+      : gradname(spiel.stufe);
 
     if (taeglich) {
       zeigeTagesauswertung();
@@ -827,9 +837,11 @@
       const alt = holeBest(spiel.stufe);
       if (spiel.punkte > alt) {
         localStorage.setItem(bestSchluessel(spiel.stufe), String(spiel.punkte));
-        $('bestwert-ende').textContent = alt ? `Neuer Bestwert (vorher ${zahl(alt)})` : 'Neuer Bestwert';
+        $('bestwert-ende').textContent = alt
+          ? t('ende.neuerBestwertVorher', { alt: zahl(alt) })
+          : t('ende.neuerBestwert');
       } else {
-        $('bestwert-ende').textContent = `Bestwert: ${zahl(alt)}`;
+        $('bestwert-ende').textContent = t('ende.bestwert', { n: zahl(alt) });
       }
     }
 
@@ -856,17 +868,17 @@
     const serie = Tagesspiel.serie();
 
     $('karte-taeglich-text').textContent = gespielt
-      ? `Heute gespielt: ${zahl(gespielt.p)} Punkte`
-      : 'Für alle dieselben fünf Schriften';
+      ? t('tag.heuteGespielt', { n: zahl(gespielt.p) })
+      : t('menue.taeglichText');
 
     /* Die Serie ist der Grund wiederzukommen — also zeigen, sobald
        es eine gibt, und daran erinnern, wenn sie heute noch hängt. */
     let marke = '';
     if (serie.aktuell > 0) {
       marke = serie.aktuell === 1
-        ? '1 Tag in Folge'
-        : `${serie.aktuell} Tage in Folge`;
-      if (!gespielt) marke += ' — heute noch offen';
+        ? t('tag.serieEins')
+        : t('tag.serieViele', { n: serie.aktuell });
+      if (!gespielt) marke += t('tag.heuteOffen');
     }
     $('karte-taeglich-serie').textContent = marke;
     $('karte-taeglich-serie').hidden = !marke;
@@ -887,9 +899,9 @@
        Seite ohne Server nicht ehrlich behaupten. */
     const rang = Tagesspiel.eigenerRang(spiel.punkte, spiel.datum);
     $('prozentrang').textContent = rang
-      ? `Besser als ${Math.round(rang.anteil * 100)} % deiner bisherigen ` +
-        `${rang.tage} ${rang.tage === 1 ? 'Runde' : 'Runden'}`
-      : 'Dein erster Tag — ab morgen gibt es einen Vergleich.';
+      ? t(rang.tage === 1 ? 'tag.besserAlsEine' : 'tag.besserAls',
+          { p: Math.round(rang.anteil * 100), n: rang.tage })
+      : t('tag.ersterTag');
 
     zeichnePunkteverteilung();
     zeichneStufenverteilung();
@@ -900,8 +912,9 @@
       const st = Math.floor(rest / 3600000);
       const mi = Math.floor(rest / 60000) % 60;
       const se = Math.floor(rest / 1000) % 60;
-      $('naechster-tag').textContent =
-        `Nächste Schrift des Tages in ${st}:${String(mi).padStart(2, '0')}:${String(se).padStart(2, '0')}`;
+      $('naechster-tag').textContent = t('tag.countdown', {
+        zeit: `${st}:${String(mi).padStart(2, '0')}:${String(se).padStart(2, '0')}`
+      });
     };
     tick();
     uhrBisMorgen = setInterval(tick, 1000);
@@ -960,7 +973,7 @@
     const rang = RAENGE.find(r => gespeichert.p / maximum >= r.ab);
 
     zeigeSchirm('ende');
-    $('ende-modus').textContent = `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`;
+    $('ende-modus').textContent = `${t('tag.titel')} · ${Tagesspiel.lesbar(spiel.datum)}`;
     $('zeugnis-rang').textContent = rang.titel;
     $('zeugnis-punkte').textContent = zahl(gespeichert.p);
     const namen = gespeichert.n || [];
@@ -968,7 +981,7 @@
       <li class="protokoll__zeile${stufe < 0 ? ' protokoll__zeile--daneben' : ''}">
         <span class="protokoll__nr">${i + 1}</span>
         ${namen[i] ? `<span class="protokoll__schrift" style="font-family:'${namen[i]}', serif">${namen[i]}</span>` : ''}
-        <span class="protokoll__stufe">${stufe < 0 ? 'nicht erkannt' : 'auf Stufe ' + (stufe + 1)}</span>
+        <span class="protokoll__stufe">${stufe < 0 ? t('ende.nichtErkannt') : t('ende.aufStufe', { n: stufe + 1 })}</span>
       </li>`).join('');
     $('orden').innerHTML = '';
     $('bestwert-ende').textContent = '';
@@ -997,24 +1010,24 @@
         ? spiel.protokoll.map(p => p.richtig ? p.stufe : -1)
         : (gespeichert ? gespeichert.s : []);
       text = [
-        `findthefont · Schrift des Tages ${Tagesspiel.lesbar(spiel.datum)}`,
-        `${tagesraster(stufen)}  ${zahl(spiel.punkte)} Punkte`,
+        `findthefont · ${t('tag.titel')} ${Tagesspiel.lesbar(spiel.datum)}`,
+        `${tagesraster(stufen)}  ${t('anleitung.punkteEinheit', { n: zahl(spiel.punkte) })}`,
         'https://rosinenschnecke.github.io/findthefont/'
       ].join('\n');
     } else {
       text = [
-        `findthefont · Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
-        `${spiel.punkte} Punkte — ${$('zeugnis-rang').textContent}`,
+        `findthefont · ${gradname(spiel.stufe)}`,
+        `${t('anleitung.punkteEinheit', { n: zahl(spiel.punkte) })} — ${$('zeugnis-rang').textContent}`,
         ...spiel.protokoll.map((p, i) =>
-          `${i + 1}. ${p.schrift.n} — ${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'nicht erkannt'} (${p.punkte} P.)`)
+          `${i + 1}. ${p.schrift.n} — ${p.richtig ? t('ende.aufStufe', { n: p.stufe + 1 }) : t('ende.nichtErkannt')}`)
       ].join('\n');
     }
 
     const fertig = () => {
       const k = $('kopieren-knopf');
-      k.textContent = 'Kopiert!';
+      k.textContent = t('ende.kopiert');
       Sfx.stempel();
-      setTimeout(() => { k.textContent = 'Ergebnis kopieren'; }, 1800);
+      setTimeout(() => { k.textContent = t('ende.kopieren'); }, 1800);
     };
     if (navigator.clipboard) navigator.clipboard.writeText(text).then(fertig).catch(fertig);
     else fertig();
@@ -1042,8 +1055,8 @@
 
     return {
       titel: taeglich
-        ? `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`
-        : `Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
+        ? `${t('tag.titel')} · ${Tagesspiel.lesbar(spiel.datum)}`
+        : gradname(spiel.stufe),
       punkte: spiel.punkte,
       rang: $('zeugnis-rang').textContent,
       runden,
@@ -1055,7 +1068,7 @@
     const knopf = $('bild-knopf');
     const alt = knopf.textContent;
     knopf.disabled = true;
-    knopf.textContent = 'Moment …';
+    knopf.textContent = t('ende.bildMoment');
 
     const name = spiel.modus === 'taeglich'
       ? `findthefont-${spiel.datum}.png`
@@ -1070,8 +1083,8 @@
       ausgang = 'fehler';
     }
 
-    knopf.textContent = { geteilt: 'Geteilt!', geladen: 'Gespeichert!',
-                          abgebrochen: alt, fehler: 'Ging nicht' }[ausgang] || alt;
+    knopf.textContent = { geteilt: t('ende.bildGeteilt'), geladen: t('ende.bildGespeichert'),
+                          abgebrochen: alt, fehler: t('ende.bildFehler') }[ausgang] || alt;
     Sfx.stempel();
     knopf.disabled = false;
     setTimeout(() => { knopf.textContent = alt; }, 2200);
@@ -1081,8 +1094,7 @@
 
   async function zurueckZumMenue() {
     if (spiel.laeuft && spiel.modus !== 'training' && !spiel.warteAufWeiter) {
-      const ja = await frage('Spiel abbrechen?',
-        'Das laufende Spiel wird verworfen und die Punkte gehen verloren.', 'Abbrechen und zurück');
+      const ja = await frage(t('frage.abbruchTitel'), t('frage.abbruchText'), t('frage.abbruchJa'));
       if (!ja) return;
     }
     spiel.laeuft = false;
@@ -1097,6 +1109,50 @@
 
   /* ---------------- Einstellungsfenster ---------------- */
 
+  function baueSprachwahl() {
+    const namen = { de: 'Deutsch', en: 'English' };
+    $('sprachwahl').innerHTML = Sprache.verfuegbar().map(code => `
+      <button type="button" class="sprachknopf${code === Sprache.aktuell() ? ' sprachknopf--aktiv' : ''}"
+              data-sprache="${code}">${namen[code] || code}</button>`).join('');
+
+    $('sprachwahl').querySelectorAll('.sprachknopf').forEach(k => {
+      k.addEventListener('click', () => {
+        Sprache.setze(k.dataset.sprache);
+        Sfx.taste();
+      });
+    });
+  }
+
+  /* Nach einem Sprachwechsel müssen alle Listen neu gesetzt werden,
+     die JavaScript zusammenbaut — data-t erreicht sie nicht. */
+  function spracheAngewendet() {
+    baueSprachwahl();
+    if (!spiel.lager.length) return;
+    baueStufenwahl();
+    baueAnleitung();
+    baueTrainingsfelder();
+    baueKatalog();
+    zeigeBestenliste();
+    zeigeTageskarte();
+    if (spiel.bestand) $('lager-fuss').textContent = t('fuss.bestand', spiel.bestand);
+    if (spiel.laeuft && spiel.runde) {
+      baueTastatur();
+      zeigeStufe(false);
+      zeigeVersuche();
+    }
+    /* Steht das Ergebnis auf dem Schirm, muss es mitwechseln. */
+    if (document.querySelector('.schirm--aktiv')?.id === 'schirm-ende') {
+      if (spiel.rangSchluessel) $('zeugnis-rang').textContent = t(spiel.rangSchluessel);
+      if (spiel.modus === 'taeglich') {
+        $('ende-modus').textContent = `${t('tag.titel')} · ${Tagesspiel.lesbar(spiel.datum)}`;
+        zeigeTagesauswertung();
+      } else {
+        $('ende-modus').textContent = gradname(spiel.stufe);
+      }
+      if (spiel.protokoll.length) { zeichneProtokoll(); zeichneOrden(); }
+    }
+  }
+
   function baueEinstellungen() {
     const e = Einstellungen.alle();
 
@@ -1104,14 +1160,14 @@
       const a = Einstellungen.alle();
       $('regler-musik').value = a.musikLaut;
       $('wert-musik').textContent = a.musikLaut + ' %';
-      $('schalter-musik').textContent = a.musikAn ? 'an' : 'aus';
+      $('schalter-musik').textContent = t(a.musikAn ? 'einst.an' : 'einst.aus');
       $('schalter-musik').setAttribute('aria-pressed', String(a.musikAn));
       $('schalter-musik').classList.toggle('schalter--aus', !a.musikAn);
       $('regler-musik').disabled = !a.musikAn;
 
       $('regler-sfx').value = a.sfxLaut;
       $('wert-sfx').textContent = a.sfxLaut + ' %';
-      $('schalter-sfx').textContent = a.sfxAn ? 'an' : 'aus';
+      $('schalter-sfx').textContent = t(a.sfxAn ? 'einst.an' : 'einst.aus');
       $('schalter-sfx').setAttribute('aria-pressed', String(a.sfxAn));
       $('schalter-sfx').classList.toggle('schalter--aus', !a.sfxAn);
       $('regler-sfx').disabled = !a.sfxAn;
@@ -1153,14 +1209,13 @@
       Einstellungen.setze('wenigerBewegung', ev.target.checked));
 
     $('bestwerte-loeschen').addEventListener('click', async () => {
-      const ja = await frage('Bestwerte löschen?',
-        'Alle gespeicherten Bestwerte werden entfernt. Das lässt sich nicht rückgängig machen.', 'Löschen');
+      const ja = await frage(t('frage.loeschenTitel'), t('frage.loeschenText'), t('frage.loeschenJa'));
       if (!ja) return;
       Object.keys(SCHWIERIGKEIT).forEach(k => localStorage.removeItem(bestSchluessel(k)));
       Tagesspiel.loesche();
       zeigeBestenliste();
       zeigeStufenBestwert();
-      $('einstellungen-fuss').textContent = 'Bestwerte gelöscht.';
+      $('einstellungen-fuss').textContent = t('einst.geloescht');
       setTimeout(() => { $('einstellungen-fuss').textContent = ''; }, 2600);
     });
 
@@ -1172,6 +1227,7 @@
 
   function verdrahte() {
     Walze.mount($('probe'));
+    baueSprachwahl();
     const zeigeEinstellungen = baueEinstellungen();
 
     /* Startseite */
@@ -1267,6 +1323,9 @@
 
   /* ---------------- Los ---------------- */
 
+  Sprache.lade();
+  Sprache.anwenden();
+  Sprache.beiWechsel(spracheAngewendet);
   Einstellungen.laden();
   Musik.beiErsterGeste();
   verdrahte();

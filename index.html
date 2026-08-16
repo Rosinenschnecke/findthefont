@@ -17,16 +17,16 @@
 <div class="staub" aria-hidden="true"></div>
 
 <header class="kopfleiste">
-  <button id="logo-knopf" class="marke" type="button" title="Zur Startseite">
+  <button id="logo-knopf" class="marke" type="button" data-t-titel="kopf.zurStartseite" title="Zur Startseite">
     <span class="marke__typ">find<span class="marke__the">the</span>font</span>
   </button>
 
   <nav class="kopfleiste__knoepfe">
     <button id="menue-knopf" class="metallknopf" type="button" hidden>
-      <span aria-hidden="true">←</span> <span class="knopf__text">Startseite</span>
+      <span aria-hidden="true">←</span> <span class="knopf__text" data-t="kopf.startseite">Startseite</span>
     </button>
-    <button id="einstellungen-knopf" class="metallknopf" type="button" title="Einstellungen">
-      <span aria-hidden="true">⚙</span> <span class="knopf__text">Einstellungen</span>
+    <button id="einstellungen-knopf" class="metallknopf" type="button" data-t-titel="kopf.einstellungen" title="Einstellungen">
+      <span aria-hidden="true">⚙</span> <span class="knopf__text" data-t="kopf.einstellungen">Einstellungen</span>
     </button>
   </nav>
 </header>
@@ -53,7 +53,7 @@
           <rect x="24" y="128" width="192" height="10" rx="5" class="sig-fuss"/>
         </svg>
       </div>
-      <p class="hinweis" id="lade-text">Schriften werden geladen …</p>
+      <p class="hinweis" id="lade-text" data-t="laden.text">Schriften werden geladen …</p>
       <div class="ladebalken"><div class="ladebalken__farbband" id="lade-balken"></div></div>
     </div>
   </section>
@@ -61,35 +61,35 @@
   <!-- ══════════════ Startseite ══════════════ -->
   <section id="schirm-menue" class="schirm">
     <div class="blattseite">
-      <h1 class="grossertitel">Erkennst du<br>die Schrift?</h1>
-      <p class="einleitung">Zuerst siehst du nur einen Punkt. Je weniger du aufdeckst, desto mehr Punkte.</p>
+      <h1 class="grossertitel" data-t="menue.titel" data-t-html>Erkennst du<br>die Schrift?</h1>
+      <p class="einleitung" data-t="menue.einleitung">Zuerst siehst du nur einen Punkt. Je weniger du aufdeckst, desto mehr Punkte.</p>
 
       <div class="menuekarten">
         <button class="menuekarte menuekarte--haupt" id="karte-taeglich" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">★</span>
-          <span class="menuekarte__titel">Schrift des Tages</span>
+          <span class="menuekarte__titel" data-t="menue.taeglich">Schrift des Tages</span>
           <span class="menuekarte__text" id="karte-taeglich-text">Für alle dieselben fünf Schriften</span>
           <span class="menuekarte__marke" id="karte-taeglich-serie" hidden></span>
         </button>
         <button class="menuekarte" id="karte-spiel" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">▶</span>
-          <span class="menuekarte__titel">Freies Spiel</span>
-          <span class="menuekarte__text">5 Runden, Schwierigkeit wählbar</span>
+          <span class="menuekarte__titel" data-t="menue.spiel">Freies Spiel</span>
+          <span class="menuekarte__text" data-t="menue.spielText">5 Runden, Schwierigkeit wählbar</span>
         </button>
         <button class="menuekarte" id="karte-training" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">✎</span>
-          <span class="menuekarte__titel">Trainingslager</span>
-          <span class="menuekarte__text">Üben ohne Wertung</span>
+          <span class="menuekarte__titel" data-t="menue.training">Trainingslager</span>
+          <span class="menuekarte__text" data-t="menue.trainingText">Üben ohne Wertung</span>
         </button>
         <button class="menuekarte" id="karte-anleitung" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">?</span>
-          <span class="menuekarte__titel">Anleitung</span>
-          <span class="menuekarte__text">Regeln in Kürze</span>
+          <span class="menuekarte__titel" data-t="menue.anleitung">Anleitung</span>
+          <span class="menuekarte__text" data-t="menue.anleitungText">Regeln in Kürze</span>
         </button>
         <button class="menuekarte" id="karte-einstellungen" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">⚙</span>
-          <span class="menuekarte__titel">Einstellungen</span>
-          <span class="menuekarte__text">Ton und Anzeige</span>
+          <span class="menuekarte__titel" data-t="menue.einstellungen">Einstellungen</span>
+          <span class="menuekarte__text" data-t="menue.einstellungenText">Ton und Anzeige</span>
         </button>
       </div>
 
@@ -100,10 +100,10 @@
   <!-- ══════════════ Schwierigkeit ══════════════ -->
   <section id="schirm-schwierigkeit" class="schirm">
     <div class="blattseite">
-      <h1 class="grossertitel grossertitel--klein">Schwierigkeit</h1>
+      <h1 class="grossertitel grossertitel--klein" data-t="schwierigkeit.titel">Schwierigkeit</h1>
       <div class="stufenwahl" id="stufenwahl"></div>
       <div class="knopfreihe">
-        <button id="losgehts-knopf" class="hauptknopf" type="button">Spiel starten</button>
+        <button id="losgehts-knopf" class="hauptknopf" type="button" data-t="schwierigkeit.start">Spiel starten</button>
       </div>
       <p class="hinweis hinweis--klein" id="stufenwahl-bestwert"></p>
     </div>
@@ -112,46 +112,45 @@
   <!-- ══════════════ Anleitung ══════════════ -->
   <section id="schirm-anleitung" class="schirm">
     <div class="blattseite">
-      <h1 class="grossertitel grossertitel--klein">Anleitung</h1>
+      <h1 class="grossertitel grossertitel--klein" data-t="anleitung.titel">Anleitung</h1>
 
       <details class="infokasten">
-        <summary>Die sieben Stufen</summary>
+        <summary data-t="anleitung.stufen">Die sieben Stufen</summary>
         <ol class="stufenliste" id="anleitung-stufen"></ol>
       </details>
 
       <details class="infokasten">
-        <summary>Punkte und Fehlversuche</summary>
+        <summary data-t="anleitung.punkte">Punkte und Fehlversuche</summary>
         <ul class="fliessliste">
-          <li>Es zählt die Stufe, auf der du richtig rätst.</li>
-          <li>Jede falsche Antwort kostet 120 Punkte und deckt eine Stufe auf.</li>
-          <li>Sind die Fehlversuche aufgebraucht, endet die Runde ohne Punkte.</li>
-          <li>Ab „Schwer“ wird die falsche Antwort durch eine neue ersetzt.</li>
-          <li>Die Schwierigkeit multipliziert die Punkte jeder Runde.</li>
+          <li data-t="anleitung.punkte1">Es zählt die Stufe, auf der du richtig rätst.</li>
+          <li data-t="anleitung.punkte2">Jede falsche Antwort kostet 120 Punkte und deckt eine Stufe auf.</li>
+          <li data-t="anleitung.punkte3">Sind die Fehlversuche aufgebraucht, endet die Runde ohne Punkte.</li>
+          <li data-t="anleitung.punkte4">Ab „Schwer“ wird die falsche Antwort durch eine neue ersetzt.</li>
+          <li data-t="anleitung.punkte5">Die Schwierigkeit multipliziert die Punkte jeder Runde.</li>
         </ul>
       </details>
 
       <details class="infokasten">
-        <summary>Schrift des Tages</summary>
+        <summary data-t="anleitung.taeglich">Schrift des Tages</summary>
         <ul class="fliessliste">
-          <li>Jeden Tag dieselben fünf Schriften — für alle gleich.</li>
-          <li>Fünf Antworten, 45 Sekunden, zwei Versuche je Runde.</li>
-          <li>Einmal am Tag; danach zeigt die Karte dein Ergebnis.</li>
-          <li>Am Ende siehst du, wie der Tag im Vergleich zu deinen
-              bisherigen ausfällt.</li>
+          <li data-t="anleitung.taeglich1">Jeden Tag dieselben fünf Schriften — für alle gleich.</li>
+          <li data-t="anleitung.taeglich2">Fünf Antworten, 45 Sekunden, zwei Versuche je Runde.</li>
+          <li data-t="anleitung.taeglich3">Einmal am Tag; danach zeigt die Karte dein Ergebnis.</li>
+          <li data-t="anleitung.taeglich4">Am Ende siehst du, wie der Tag im Vergleich zu deinen bisherigen ausfällt.</li>
         </ul>
       </details>
 
       <details class="infokasten">
-        <summary>Tastatur</summary>
+        <summary data-t="anleitung.tastatur">Tastatur</summary>
         <ul class="fliessliste">
-          <li><kbd>1</kbd>–<kbd>8</kbd> — Antwort wählen</li>
-          <li><kbd>Leertaste</kbd> — aufdecken, weiter</li>
-          <li><kbd>Esc</kbd> — Fenster schließen</li>
+          <li><kbd>1</kbd>–<kbd>8</kbd> <span data-t="anleitung.tastatur1">— Antwort wählen</span></li>
+          <li><kbd>␣</kbd> <span data-t="anleitung.tastatur2">— aufdecken, weiter</span></li>
+          <li><kbd>Esc</kbd> <span data-t="anleitung.tastatur3">— Fenster schließen</span></li>
         </ul>
       </details>
 
       <div class="knopfreihe">
-        <button class="hauptknopf" type="button" data-ziel="menue">Zurück</button>
+        <button class="hauptknopf" type="button" data-ziel="menue" data-t="anleitung.zurueck">Zurück</button>
       </div>
     </div>
   </section>
@@ -159,29 +158,29 @@
   <!-- ══════════════ Trainingslager ══════════════ -->
   <section id="schirm-training" class="schirm">
     <div class="blattseite blattseite--breit">
-      <h1 class="grossertitel grossertitel--klein">Trainingslager</h1>
+      <h1 class="grossertitel grossertitel--klein" data-t="training.titel">Trainingslager</h1>
 
       <div class="reiter" role="tablist">
-        <button class="reiter__knopf reiter__knopf--aktiv" data-reiter="ueben" role="tab" type="button">Üben</button>
-        <button class="reiter__knopf" data-reiter="katalog" role="tab" type="button">Schriften ansehen</button>
+        <button class="reiter__knopf reiter__knopf--aktiv" data-reiter="ueben" role="tab" type="button" data-t="training.ueben">Üben</button>
+        <button class="reiter__knopf" data-reiter="katalog" role="tab" type="button" data-t="training.katalog">Schriften ansehen</button>
       </div>
 
       <div class="reiter__inhalt reiter__inhalt--aktiv" data-inhalt="ueben">
         <div class="feldgruppe">
           <label class="feld">
-            <span class="feld__schild">Gattung</span>
+            <span class="feld__schild" data-t="training.gattung">Gattung</span>
             <select id="training-gattung" class="feld__auswahl"></select>
           </label>
           <label class="feld">
-            <span class="feld__schild">Bekanntheit</span>
+            <span class="feld__schild" data-t="training.bekanntheit">Bekanntheit</span>
             <select id="training-bekanntheit" class="feld__auswahl">
-              <option value="1">nur sehr bekannte</option>
-              <option value="2" selected>bekannte</option>
-              <option value="3">alle</option>
+              <option value="1" data-t="training.bekannt1">nur sehr bekannte</option>
+              <option value="2" selected data-t="training.bekannt2">bekannte</option>
+              <option value="3" data-t="training.bekannt3">alle</option>
             </select>
           </label>
           <label class="feld">
-            <span class="feld__schild">Antworten</span>
+            <span class="feld__schild" data-t="training.antworten">Antworten</span>
             <select id="training-optionen" class="feld__auswahl">
               <option value="4" selected>4</option>
               <option value="6">6</option>
@@ -192,15 +191,15 @@
         <p class="hinweis hinweis--klein" id="training-anzahl"></p>
 
         <div class="knopfreihe">
-          <button id="training-start" class="hauptknopf" type="button">Training starten</button>
+          <button id="training-start" class="hauptknopf" type="button" data-t="training.start">Training starten</button>
         </div>
 
         <details class="infokasten">
-          <summary>Was ist anders als im Spiel?</summary>
+          <summary data-t="training.unterschied">Was ist anders als im Spiel?</summary>
           <ul class="fliessliste">
-            <li>Keine Punkte, keine Zeit, beliebig viele Versuche.</li>
-            <li>Die Lösung lässt sich jederzeit anzeigen.</li>
-            <li>Es läuft, bis du aufhörst.</li>
+            <li data-t="training.unterschied1">Keine Punkte, keine Zeit, beliebig viele Versuche.</li>
+            <li data-t="training.unterschied2">Die Lösung lässt sich jederzeit anzeigen.</li>
+            <li data-t="training.unterschied3">Es läuft, bis du aufhörst.</li>
           </ul>
         </details>
       </div>
@@ -208,15 +207,15 @@
       <div class="reiter__inhalt" data-inhalt="katalog">
         <div class="feldgruppe">
           <label class="feld">
-            <span class="feld__schild">Gattung</span>
+            <span class="feld__schild" data-t="training.gattung">Gattung</span>
             <select id="katalog-gattung" class="feld__auswahl"></select>
           </label>
           <label class="feld">
-            <span class="feld__schild">Suchen</span>
-            <input id="katalog-suche" class="feld__eingabe" type="search" placeholder="Name der Schrift">
+            <span class="feld__schild" data-t="katalog.suchen">Suchen</span>
+            <input id="katalog-suche" class="feld__eingabe" type="search" data-t-platzhalter="katalog.suchePlatz" placeholder="Name der Schrift">
           </label>
           <label class="feld feld--breit">
-            <span class="feld__schild">Probetext</span>
+            <span class="feld__schild" data-t="katalog.probetext">Probetext</span>
             <input id="katalog-text" class="feld__eingabe" type="text"
                    placeholder="Hamburgefonstiv" maxlength="60">
           </label>
@@ -240,7 +239,7 @@
           <span class="anzeige__wert zaehlwerk" id="hud-punkte">0</span>
         </div>
         <div class="anzeige anzeige--wert">
-          <span class="anzeige__schild">Diese Runde</span>
+          <span class="anzeige__schild" data-t="spiel.dieseRunde">Diese Runde</span>
           <span class="anzeige__wert" id="hud-wert">1000</span>
         </div>
       </div>
@@ -272,11 +271,11 @@
       <div class="bedienfeld">
         <div class="werkzeugreihe">
           <button id="aufdecken-knopf" class="werkzeug werkzeug--breit" type="button">
-            <span class="werkzeug__titel">Mehr aufdecken</span>
+            <span class="werkzeug__titel" data-t="spiel.aufdecken">Mehr aufdecken</span>
             <span class="werkzeug__preis" id="aufdecken-info"></span>
           </button>
           <button id="loesung-knopf" class="werkzeug" type="button" hidden>
-            <span class="werkzeug__titel">Lösung zeigen</span>
+            <span class="werkzeug__titel" data-t="spiel.loesung">Lösung zeigen</span>
           </button>
         </div>
 
@@ -292,45 +291,40 @@
       <div class="zeugnis__zierrand">
         <p class="ueberzeile" id="ende-modus"></p>
         <p class="zeugnis__rang" id="zeugnis-rang">—</p>
-        <p class="zeugnis__punkte"><span id="zeugnis-punkte">0</span><small>Punkte</small></p>
+        <p class="zeugnis__punkte"><span id="zeugnis-punkte">0</span><small data-t="ende.punkteEinheit">Punkte</small></p>
 
         <ol class="protokoll" id="protokoll"></ol>
         <div class="orden" id="orden"></div>
 
         <div id="tagesauswertung" hidden>
           <ul class="kennzahlen">
-            <li><b id="serie-aktuell">0</b><small>Tage in Folge</small></li>
-            <li><b id="serie-laengste">0</b><small>längste Serie</small></li>
-            <li><b id="serie-tage">0</b><small>Tage gespielt</small></li>
+            <li><b id="serie-aktuell">0</b><small data-t="tag.inFolge">Tage in Folge</small></li>
+            <li><b id="serie-laengste">0</b><small data-t="tag.laengste">längste Serie</small></li>
+            <li><b id="serie-tage">0</b><small data-t="tag.gespielt">Tage gespielt</small></li>
           </ul>
 
-          <h2 class="abschnittstitel">Wie deine Ergebnisse verteilt sind</h2>
+          <h2 class="abschnittstitel" data-t="tag.verteilung">Wie deine Ergebnisse verteilt sind</h2>
           <div class="diagramm" id="punkteverteilung"></div>
           <p class="diagramm__fuss" id="prozentrang"></p>
 
-          <h2 class="abschnittstitel">Auf welcher Stufe du erkennst</h2>
+          <h2 class="abschnittstitel" data-t="tag.stufenTitel">Auf welcher Stufe du erkennst</h2>
           <div class="diagramm" id="stufenverteilung"></div>
-          <p class="diagramm__fuss">Über alle bisherigen Tage · ✗ = nicht erkannt</p>
+          <p class="diagramm__fuss" data-t="tag.stufenFuss">Über alle bisherigen Tage · ✗ = nicht erkannt</p>
 
           <p class="countdown" id="naechster-tag"></p>
 
           <details class="infokasten infokasten--eng">
-            <summary>Warum kein Vergleich mit anderen Spielern?</summary>
-            <p class="fliesstext">
-              Die Seite läuft ohne Server: Alles, was du spielst, bleibt in
-              deinem Browser. Damit gibt es keine Ergebnisse anderer Leute,
-              mit denen sich rechnen ließe — verglichen wird deshalb mit
-              deinen eigenen bisherigen Tagen.
-            </p>
+            <summary data-t="tag.warum">Warum kein Vergleich mit anderen Spielern?</summary>
+            <p class="fliesstext" data-t="tag.warumText"></p>
           </details>
         </div>
 
         <div class="knopfreihe">
-          <button id="nochmal-knopf" class="hauptknopf" type="button">Nochmal</button>
-          <button id="stufe-wechseln-knopf" class="nebenknopf" type="button">Schwierigkeit</button>
-          <button id="kopieren-knopf" class="nebenknopf" type="button">Kopieren</button>
-          <button id="bild-knopf" class="nebenknopf" type="button">Als Bild</button>
-          <button class="nebenknopf" type="button" data-ziel="menue">Startseite</button>
+          <button id="nochmal-knopf" class="hauptknopf" type="button" data-t="ende.nochmal">Nochmal</button>
+          <button id="stufe-wechseln-knopf" class="nebenknopf" type="button" data-t="ende.schwierigkeit">Schwierigkeit</button>
+          <button id="kopieren-knopf" class="nebenknopf" type="button" data-t="ende.kopieren">Kopieren</button>
+          <button id="bild-knopf" class="nebenknopf" type="button" data-t="ende.bild">Als Bild</button>
+          <button class="nebenknopf" type="button" data-ziel="menue" data-t="ende.startseite">Startseite</button>
         </div>
         <p class="hinweis hinweis--klein" id="bestwert-ende"></p>
       </div>
@@ -349,20 +343,20 @@
     <p class="aufloesung__probe" id="aufloesung-probe">Hamburgefonstiv 0123</p>
 
     <div class="aufloesung__vergleich" id="aufloesung-vergleich" hidden>
-      <span class="vergleich__schild">Deine Antwort</span>
+      <span class="vergleich__schild" data-t="aufloesung.deineAntwort">Deine Antwort</span>
       <p class="vergleich__probe" id="vergleich-probe"></p>
       <span class="vergleich__name" id="vergleich-name"></span>
     </div>
 
     <details class="infokasten infokasten--eng">
-      <summary>Mehr zu dieser Schrift</summary>
+      <summary data-t="aufloesung.mehr">Mehr zu dieser Schrift</summary>
       <p class="aufloesung__wissen" id="aufloesung-wissen"></p>
     </details>
 
     <p class="aufloesung__punkte" id="aufloesung-punkte"></p>
     <div class="knopfreihe">
-      <button id="weiter-knopf" class="hauptknopf" type="button">Weiter</button>
-      <button id="training-ende-knopf" class="nebenknopf" type="button" hidden>Beenden</button>
+      <button id="weiter-knopf" class="hauptknopf" type="button" data-t="aufloesung.weiter">Weiter</button>
+      <button id="training-ende-knopf" class="nebenknopf" type="button" hidden data-t="aufloesung.beenden">Beenden</button>
     </div>
   </div>
 </div>
@@ -370,12 +364,17 @@
 <!-- ══════════════ Einstellungen ══════════════ -->
 <div class="ueberblendung" id="einstellungen-fenster" hidden>
   <div class="ueberblendung__blatt ueberblendung__blatt--eng">
-    <button class="schliessen" id="einstellungen-schliessen" type="button" aria-label="Schließen">×</button>
-    <h2 class="fenster__titel">Einstellungen</h2>
+    <button class="schliessen" id="einstellungen-schliessen" type="button" data-t-titel="einst.schliessen" aria-label="Schließen">×</button>
+    <h2 class="fenster__titel" data-t="einst.titel">Einstellungen</h2>
+
+    <div class="sprachwahl">
+      <span class="regler__kopf" data-t="einst.sprache">Sprache</span>
+      <div class="sprachwahl__knoepfe" id="sprachwahl"></div>
+    </div>
 
     <div class="regler">
       <div class="regler__kopf">
-        <label for="regler-musik">Musik</label>
+        <label for="regler-musik" data-t="einst.musik">Musik</label>
         <button class="schalter" id="schalter-musik" type="button" aria-pressed="true">an</button>
       </div>
       <input id="regler-musik" class="regler__schieber" type="range" min="0" max="100" step="1">
@@ -384,7 +383,7 @@
 
     <div class="regler">
       <div class="regler__kopf">
-        <label for="regler-sfx">Soundeffekte</label>
+        <label for="regler-sfx" data-t="einst.sfx">Soundeffekte</label>
         <button class="schalter" id="schalter-sfx" type="button" aria-pressed="true">an</button>
       </div>
       <input id="regler-sfx" class="regler__schieber" type="range" min="0" max="100" step="1">
@@ -392,12 +391,12 @@
     </div>
 
     <div class="haken">
-      <label><input type="checkbox" id="haken-tippen"> Tippgeräusch</label>
-      <label><input type="checkbox" id="haken-bewegung"> Weniger Animation</label>
+      <label><input type="checkbox" id="haken-tippen"> <span data-t="einst.tippen">Tippgeräusch</span></label>
+      <label><input type="checkbox" id="haken-bewegung"> <span data-t="einst.bewegung">Weniger Animation</span></label>
     </div>
 
     <div class="knopfreihe knopfreihe--links">
-      <button id="bestwerte-loeschen" class="nebenknopf nebenknopf--warnung" type="button">Bestwerte löschen</button>
+      <button id="bestwerte-loeschen" class="nebenknopf nebenknopf--warnung" type="button" data-t="einst.loeschen">Bestwerte löschen</button>
     </div>
     <p class="hinweis hinweis--klein" id="einstellungen-fuss"></p>
   </div>
@@ -410,7 +409,7 @@
     <p class="fliesstext" id="rueckfrage-text"></p>
     <div class="knopfreihe">
       <button id="rueckfrage-ja" class="hauptknopf" type="button">Ja</button>
-      <button id="rueckfrage-nein" class="nebenknopf" type="button">Abbrechen</button>
+      <button id="rueckfrage-nein" class="nebenknopf" type="button" data-t="frage.abbrechen">Abbrechen</button>
     </div>
   </div>
 </div>
@@ -419,6 +418,7 @@
   <span id="lager-fuss"></span>
 </footer>
 
+<script src="js/i18n.js"></script>
 <script src="js/fonts.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/share.js"></script>

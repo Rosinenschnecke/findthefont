@@ -8,7 +8,7 @@ Punkt. Wer die Schrift daran erkennt, bekommt die volle Punktzahl. Wer mehr
 sehen will, deckt weiter auf und bekommt weniger.
 
 **Keine Abhängigkeiten, kein Build, kein Server.** Statisches HTML, CSS und
-JavaScript.
+JavaScript — offline lauffähig, auf Deutsch und Englisch.
 
 ## Lokal starten
 
@@ -37,7 +37,7 @@ statische Webspace.
 | **Freies Spiel** | 5 Runden mit Punkten, Schwierigkeit wählbar |
 | **Trainingslager** | Üben ohne Punkte und Zeitdruck, dazu ein durchsuchbarer Schriftenkatalog |
 | **Anleitung** | Stufen und Punkte, in aufklappbaren Kästen |
-| **Einstellungen** | Lautstärke für Musik und Soundeffekte, Animationen, Bestwerte |
+| **Einstellungen** | Sprache, Lautstärke für Musik und Soundeffekte, Animationen, Bestwerte |
 
 ### Die sieben Stufen
 
@@ -97,8 +97,39 @@ keine fremden Ergebnisse, mit denen sich rechnen ließe. Verglichen wird
 deshalb mit den eigenen bisherigen Tagen, und die Auswertung sagt das auch so.
 Ein echter Vergleich bräuchte einen Endpunkt, der Ergebnisse sammelt.
 
+Das Ergebnis lässt sich als Text kopieren oder als **Bild** speichern: ein
+Papierblatt mit Punktzahl, Kästchenraster und den Schriften der Runde, jede in
+sich selbst gesetzt (`js/share.js`). Wo das Gerät die Teilen-Funktion kennt,
+geht es direkt dorthin, sonst als Download.
+
 **Tastatur:** `1`–`8` wählen eine Antwort, `Leertaste` deckt auf bzw. blättert
 weiter, `Esc` schließt Fenster.
+
+## Sprachen
+
+Deutsch und Englisch, umschaltbar in den Einstellungen; beim ersten Aufruf
+entscheidet die Spracheinstellung des Browsers. Feste Texte tragen im HTML ein
+`data-t="schluessel"`, alles dynamisch Zusammengesetzte holt sich den Text über
+`t('schluessel', { platzhalter })` — beides aus `js/i18n.js`.
+
+Mit übersetzt sind auch die Dinge, die man leicht übersieht: die **Schriftproben**
+selbst (englische Wörter und das englische Pangramm statt der deutschen), die
+**Notizen zu allen 124 Schriften** (`NOTIZ_EN` in `js/fonts.js`), die
+Gattungsnamen und das Zahlenformat. Ein Wechsel mitten im Spiel baut die
+betroffenen Listen neu auf.
+
+## Offline und Installation
+
+`sw.js` legt das Gerüst bei der Installation ab und frischt es im Hintergrund
+auf; Schriften und Musik kommen erst in den Speicher, wenn sie das erste Mal
+gebraucht werden. Zusammen mit `manifest.webmanifest` lässt sich die Seite als
+App installieren und läuft ohne Netz.
+
+Beim Start wird **nichts** an Schriften vorgeladen: Die mitgelieferten Familien
+liegen ohnehin im Ordner `fonts/` und müssen nicht geprüft werden, gemessen
+werden nur die Systemschriften — und das geht ohne Laden. Vor jeder Runde holt
+`FontDepot.load()` die eine Schrift, die gebraucht wird. Im Testbrowser sind das
+52 KB bis zum Menü statt 2,8 MB.
 
 ## Aufbau
 
@@ -109,6 +140,7 @@ css/style.css         Gestaltung
 css/schriften.css     @font-face-Regeln — erzeugt, nicht von Hand pflegen
 fonts/                Mitgelieferte Schriftdateien (.woff2)
 assets/musik/         Hintergrundmusik
+js/i18n.js            Deutsche und englische Texte, Schriftproben je Sprache
 js/fonts.js           Schriftenkatalog: Gattung, Herkunft, Notiz, Bekanntheit
 js/daily.js           Schrift des Tages: Datum, Zufallssaat, Verlauf, Statistik
 js/settings.js        Einstellungen, im Browser gespeichert
@@ -116,7 +148,10 @@ js/audio.js           Soundeffekte (Web Audio, synthetisch erzeugt)
 js/music.js           Hintergrundmusik in Dauerschleife
 js/detect.js          Prüft, welche Schriften wirklich vorhanden sind
 js/specimen.js        Zeichnet die Schriftprobe aufs Canvas
+js/share.js           Ergebnis als PNG
 js/game.js            Spielablauf, Punkte, Training, Ergebnis
+sw.js                 Service Worker für Offline-Betrieb
+manifest.webmanifest  Angaben für die Installation als App
 tools/schriften-holen.mjs   Holt die Schriftdateien und schreibt schriften.css
 ```
 
@@ -135,9 +170,10 @@ nicht — sie werden nur abgefragt, wenn das Gerät sie wirklich besitzt. Die
 übrigen 64 Familien liegen als `.woff2` bei, damit überall dieselben Proben
 ankommen, auch offline oder hinter einer Firewall, die Schrift-CDNs blockiert.
 
-`js/detect.js` misst vor dem Spiel jede Schrift gegen die drei Ausweich­gattungen
-des Browsers. Nur was sich messbar unterscheidet, kommt ins Spiel — sonst gäbe
-es Antwortmöglichkeiten, die identisch aussehen.
+`js/detect.js` misst jede Systemschrift gegen die drei Ausweich­gattungen des
+Browsers. Nur was sich messbar unterscheidet, kommt ins Spiel — sonst gäbe es
+Antwortmöglichkeiten, die identisch aussehen. Die mitgelieferten Familien
+werden nicht geprüft; sie sind ja da.
 
 ### Ton
 
@@ -158,6 +194,8 @@ Neuen Eintrag in `js/fonts.js` anlegen:
   m: 'Erik Spiekermann, 2013',
   t: 'Ursprünglich für Firefox OS entworfen.' }
 ```
+
+Dazu einen Eintrag in `NOTIZ_EN` für die englische Notiz.
 
 `src: 'sys'` für Systemschriften (nichts weiter zu tun), `src: 'google'` für
 nachzuladende. Bei letzteren anschließend einmal

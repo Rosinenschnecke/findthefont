@@ -12,7 +12,7 @@
      ersten Aufruf ausbremsen, und die Musik sind 17 MB.
    ============================================================ */
 
-const VERSION = 'ftf-v1';
+const VERSION = 'ftf-v2';
 const GERUEST = `${VERSION}-geruest`;
 const BEIWERK = `${VERSION}-beiwerk`;
 
@@ -21,6 +21,7 @@ const GRUNDAUSSTATTUNG = [
   './index.html',
   './css/style.css',
   './css/schriften.css',
+  './js/i18n.js',
   './js/fonts.js',
   './js/daily.js',
   './js/share.js',
