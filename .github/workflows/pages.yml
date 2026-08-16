@@ -1,0 +1,48 @@
+# Stellt die Werkstatt auf GitHub Pages ins Schaufenster.
+#
+# Die Seite ist rein statisch — es gibt nichts zu bauen, der Ordner
+# wandert unverändert auf die Seite. Der Schritt "configure-pages"
+# schaltet GitHub Pages beim ersten Lauf selbst ein (enablement: true),
+# eine Einstellung von Hand ist nicht nötig.
+
+name: Seite veröffentlichen
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Läuft immer nur eine Veröffentlichung; angefangene nicht abwürgen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  veroeffentlichen:
+    # Nur der Standard-Branch geht live — Nebenbranches nicht.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.abzug.outputs.page_url }}
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Pages einrichten
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Ordner einpacken
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Abzug veröffentlichen
+        id: abzug
+        uses: actions/deploy-pages@v4

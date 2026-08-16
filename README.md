@@ -1,5 +1,7 @@
 # findthefont
 
+**→ [Hier spielen](https://rosinenschnecke.github.io/findthefont/)**
+
 Ein Ratespiel über Druckschriften, aufgemacht als Werkstatt einer alten
 Schriftsetzerei. Die Maschine tippt eine Schriftprobe aufs Papier — zuerst
 nur einen einzigen Punkt. Wer die Schrift daran erkennt, bekommt die volle
@@ -16,9 +18,17 @@ python3 -m http.server 8000
 ```
 
 Ein Dateiaufruf per `file://` funktioniert nicht zuverlässig, weil Browser
-das Nachladen der Schriftdateien dabei blockieren. Zum Veröffentlichen
-genügt jeder statische Webspace (GitHub Pages, Netlify, ein beliebiger
-Webserver) — einfach den gesamten Ordner hochladen.
+das Nachladen der Schriftdateien dabei blockieren.
+
+## Veröffentlichen
+
+Die Seite liegt auf **GitHub Pages**:
+<https://rosinenschnecke.github.io/findthefont/>
+
+Darum kümmert sich `.github/workflows/pages.yml` — bei jedem Push auf den
+Standard-Branch wandert der Ordner unverändert auf die Seite. Gebaut wird
+nichts, es gibt ja nichts zu bauen. Genauso gut tut es jeder andere
+statische Webspace: einfach den gesamten Ordner hochladen.
 
 ## Spielprinzip
 
