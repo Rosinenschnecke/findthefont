@@ -25,62 +25,29 @@
 
   /* ---------------- Schwierigkeitsgrade ---------------- */
 
+  /* fehlversuche: so viele falsche Antworten sind erlaubt; die
+     nächste beendet die Runde. Damit lässt sich nicht einfach
+     jede Antwort durchprobieren.
+     nachruecken: nach jedem Fehlgriff kommt eine weitere Antwort
+     hinzu, damit die Auswahl nicht kleiner wird. */
   const SCHWIERIGKEIT = {
     leicht: {
-      name: 'Leicht', optionen: 4, zeit: 0, faktor: 1.0, bekanntheit: 1, gleicheGattung: false,
-      text: 'Nur Schriften, die fast jeder schon gesehen hat. Kein Zeitlimit.'
+      name: 'Leicht', optionen: 4, zeit: 0, faktor: 1.0,
+      bekanntheit: 1, gleicheGattung: false, fehlversuche: 1, nachruecken: false
     },
     mittel: {
-      name: 'Mittel', optionen: 5, zeit: 60, faktor: 1.4, bekanntheit: 2, gleicheGattung: false,
-      text: 'Auch Schriften, die einem im Web und in Office begegnen. 60 Sekunden pro Runde.'
+      name: 'Mittel', optionen: 5, zeit: 60, faktor: 1.4,
+      bekanntheit: 2, gleicheGattung: false, fehlversuche: 1, nachruecken: false
     },
     schwer: {
-      name: 'Schwer', optionen: 6, zeit: 40, faktor: 1.9, bekanntheit: 3, gleicheGattung: true,
-      text: 'Alle Schriften. Die Auswahl stammt immer aus derselben Gattung. 40 Sekunden.'
+      name: 'Schwer', optionen: 6, zeit: 40, faktor: 1.9,
+      bekanntheit: 3, gleicheGattung: true, fehlversuche: 2, nachruecken: true
     },
     experte: {
-      name: 'Experte', optionen: 8, zeit: 25, faktor: 2.5, bekanntheit: 3, gleicheGattung: true,
-      text: 'Acht verwandte Schriften, 25 Sekunden. Für Leute mit gutem Auge.'
+      name: 'Experte', optionen: 8, zeit: 25, faktor: 2.5,
+      bekanntheit: 3, gleicheGattung: true, fehlversuche: 2, nachruecken: true
     }
   };
-
-  /* ---------------- Tipps ----------------
-
-     Ein Tipp verrät nichts über die gesuchte Schrift, sondern
-     beschriftet die Antwortmöglichkeiten mit einer Eigenschaft.
-     Vergleichen muss man selbst: Hat die Probe Serifen? Dann
-     fallen alle Antworten weg, an denen „Grotesk“ steht.
-     ------------------------------------------------------------ */
-
-  const TIPPS = [
-    {
-      id: 'gattung', kosten: 60,
-      meldung: 'Gattung auf den Antworten',
-      erklaerung: 'Schreibt die Gattung auf jede Antwort — Antiqua, Grotesk, Schreibmaschine und so weiter.',
-      schild: f => CATEGORY_LABELS[f.cat]
-    },
-    {
-      id: 'jahr', kosten: 120,
-      meldung: 'Entstehungsjahr auf den Antworten',
-      erklaerung: 'Schreibt das Entstehungsjahr auf jede Antwort. Alte und neue Schriften sehen verschieden aus.',
-      schild: f => jahrVon(f)
-    },
-    {
-      id: 'streichen', kosten: 180,
-      meldung: 'eine falsche Antwort gestrichen',
-      erklaerung: 'Streicht eine falsche Antwort durch — ohne Punktabzug für einen Fehlgriff.',
-      schild: null
-    }
-  ];
-
-  /** Zieht das Entstehungsjahr aus der Herkunftsangabe. */
-  function jahrVon(f) {
-    const jahr = f.m.match(/\b(1[0-9]{3}|20[0-9]{2})\b/);
-    if (jahr) return jahr[1];
-    const jh = f.m.match(/(\d{1,2})\.\s*Jh/);
-    if (jh) return jh[1] + '. Jh.';
-    return 'Jahr unbekannt';
-  }
 
   const RUNDEN_JE_SPIEL = 5;
   const FEHLERKOSTEN = 120;
@@ -97,7 +64,7 @@
 
   const ORDEN = [
     { id: 'blind',   name: 'Nur ein Punkt',    text: 'Eine Schrift allein am Punkt erkannt.' },
-    { id: 'sparsam', name: 'Ohne Hilfe',       text: 'Eine Runde ohne Aufdecken und ohne Tipp gelöst.' },
+    { id: 'sparsam', name: 'Ohne Hilfe',       text: 'Eine Runde ohne einmal aufzudecken gelöst.' },
     { id: 'rein',    name: 'Fehlerfrei',       text: 'Keine einzige falsche Antwort im ganzen Spiel.' },
     { id: 'serie',   name: 'Alle fünf',        text: 'Alle fünf Schriften richtig bestimmt.' },
     { id: 'lupe',    name: 'Nicht aufgegeben', text: 'Eine Schrift erst auf der letzten Stufe geknackt.' }
@@ -186,19 +153,11 @@
     clearInterval(ticker);
     spiel.lager = stock;
 
-    const eigene = stock.filter(f => f.src === 'sys').length;
-    $('lager-info').textContent =
-      `${stock.length} von ${total} Schriften stehen zur Verfügung — ` +
-      `${eigene === 1 ? 'eine davon ist' : eigene + ' davon sind'} auf diesem Gerät installiert, ` +
-      `der Rest wird mitgeliefert.` +
-      (missing.length ? ` ${missing.length} Systemschriften gibt es hier nicht.` : '');
-    $('lager-fuss').textContent = `${stock.length} Schriften verfügbar`;
+    $('lager-fuss').textContent = `${stock.length} von ${total} Schriften verfügbar`;
 
     if (stock.length < 8) {
       $('lade-text').textContent = 'Zu wenige Schriften gefunden.';
-      $('lager-info').textContent =
-        'Es konnten zu wenige Schriften geladen werden. Liegt der Ordner „fonts“ neben der Seite ' +
-        'und ist css/schriften.css eingebunden?';
+      $('lager-fuss').textContent = 'Zu wenige Schriften geladen.';
       $('karte-spiel').disabled = true;
       $('karte-training').disabled = true;
       zeigeSchirm('menue');
@@ -221,9 +180,9 @@
   function zeigeBestenliste() {
     $('bestenliste').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => {
       const b = holeBest(key);
-      return `<li class="bestenliste__zeile">
-        <span class="bestenliste__name">${s.name}</span>
-        <span class="bestenliste__wert">${b ? zahl(b) + ' Punkte' : '—'}</span>
+      return `<li class="bestwerte__zeile">
+        <span class="bestwerte__name">${s.name}</span>
+        <span class="bestwerte__wert">${b ? zahl(b) : '—'}</span>
       </li>`;
     }).join('');
   }
@@ -234,11 +193,11 @@
     $('stufenwahl').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => `
       <button type="button" class="stufenkarte${key === spiel.stufe ? ' stufenkarte--aktiv' : ''}" data-stufe="${key}">
         <span class="stufenkarte__name">${s.name}</span>
-        <span class="stufenkarte__text">${s.text}</span>
         <span class="stufenkarte__daten">
           <span>${s.optionen} Antworten</span>
-          <span>${s.zeit ? s.zeit + ' s pro Runde' : 'ohne Zeitlimit'}</span>
-          <span>Punkte ×${s.faktor.toFixed(1).replace('.', ',')}</span>
+          <span>${s.zeit ? s.zeit + ' s' : 'ohne Zeit'}</span>
+          <span>${s.fehlversuche + 1} Versuche</span>
+          <span>×${s.faktor.toFixed(1).replace('.', ',')}</span>
         </span>
       </button>`).join('');
 
@@ -257,9 +216,9 @@
   function zeigeStufenBestwert() {
     const b = holeBest(spiel.stufe);
     const moeglich = Math.round(RUNDEN_JE_SPIEL * STUFEN[0].wert * SCHWIERIGKEIT[spiel.stufe].faktor);
-    $('stufenwahl-bestwert').textContent =
-      `Höchstens erreichbar: ${zahl(moeglich)} Punkte. ` +
-      (b ? `Dein Bestwert: ${zahl(b)}.` : 'Noch kein Bestwert.');
+    $('stufenwahl-bestwert').textContent = b
+      ? `Bestwert ${zahl(b)} von ${zahl(moeglich)} möglichen Punkten`
+      : `Bis zu ${zahl(moeglich)} Punkte möglich`;
   }
 
   /* ---------------- Anleitung ---------------- */
@@ -272,8 +231,6 @@
         <span class="stufenliste__wert">${s.wert} Punkte</span>
       </li>`).join('');
 
-    $('anleitung-tipps').innerHTML = TIPPS.map((t, i) =>
-      `<li><strong>${i + 1}. Tipp — ${t.kosten} Punkte:</strong> ${t.erklaerung}</li>`).join('');
   }
 
   /* ---------------- Trainingslager ---------------- */
@@ -413,10 +370,6 @@
       optionen: gegenspieler(ziel, anzahl, pool, gleicheGattung),
       stufe: 0,
       fehler: [],
-      gestrichen: [],
-      tippkosten: 0,
-      tippStufe: 0,
-      genutzteTipps: [],
       proben: STUFEN.map(s => s.probe()),
       beendet: false
     };
@@ -426,8 +379,6 @@
       : `${spiel.rundeNr} / ${RUNDEN_JE_SPIEL}`;
     $('blatt-kopf-links').textContent = training ? `Aufgabe ${spiel.rundeNr}` : `Runde ${spiel.rundeNr}`;
     $('aufloesung').hidden = true;
-    $('tippausgabe').hidden = true;
-    $('tippausgabe').innerHTML = '';
     $('aufdecken-knopf').disabled = false;
     $('loesung-knopf').disabled = false;
 
@@ -439,7 +390,7 @@
 
     baueTastatur();
     baueStufenleiste();
-    zeigeTippbox();
+    zeigeVersuche();
     Walze.leere();
     zeigeStufe(true);
     starteUhr();
@@ -451,7 +402,7 @@
     stoppeUhr();
     const sekunden = spiel.modus === 'training' ? 0 : SCHWIERIGKEIT[spiel.stufe].zeit;
     $('zeitband').hidden = !sekunden;
-    $('blatt-zeit').hidden = !sekunden;
+    $('zeitzahl').hidden = !sekunden;
     if (!sekunden) return;
 
     spiel.restzeit = sekunden;
@@ -474,23 +425,22 @@
   }
 
   /**
-   * Die Zeit wird nicht in einem eigenen Balken gezeigt, sondern
-   * hinter der Stufenleiste: Der eingefärbte Teil der gestrichelten
-   * Linie schrumpft, bis nichts mehr übrig ist.
+   * Es gibt keinen eigenen Zeitbalken: Die Walze selbst ist die Uhr.
+   * Das Leuchten auf ihr läuft mit der verbleibenden Zeit zurück.
    */
   function zeichneUhr(rest, gesamt) {
     const anteil = Math.max(0, rest / gesamt);
     $('zeitband').style.width = (anteil * 100) + '%';
-    $('zeitband').classList.toggle('zeitband--knapp', anteil < 0.25);
-    $('blatt-zeit').textContent = Math.max(0, Math.ceil(rest)) + ' s';
-    $('blatt-zeit').classList.toggle('blatt__zeit--knapp', anteil < 0.25);
+    $('zeitband').classList.toggle('walzenbalken__zeit--knapp', anteil < 0.25);
+    $('zeitzahl').textContent = Math.max(0, Math.ceil(rest));
+    $('zeitzahl').classList.toggle('walzenbalken__zahl--knapp', anteil < 0.25);
   }
 
   function stoppeUhr() {
     clearInterval(spiel.uhr);
     spiel.uhr = null;
-    $('zeitband').classList.remove('zeitband--knapp');
-    $('blatt-zeit').classList.remove('blatt__zeit--knapp');
+    $('zeitband').classList.remove('walzenbalken__zeit--knapp');
+    $('zeitzahl').classList.remove('walzenbalken__zahl--knapp');
   }
 
   /* ---------------- Anzeige der Stufe ---------------- */
@@ -498,7 +448,7 @@
   function rundenwert(stufeNr = spiel.runde.stufe) {
     const r = spiel.runde;
     return Math.max(MINDESTPUNKTE,
-      STUFEN[stufeNr].wert - r.fehler.length * FEHLERKOSTEN - r.tippkosten);
+      STUFEN[stufeNr].wert - r.fehler.length * FEHLERKOSTEN);
   }
 
   function rundenpunkte() {
@@ -510,7 +460,7 @@
     const stufe = STUFEN[r.stufe];
     const training = spiel.modus === 'training';
 
-    $('blatt-kopf-rechts').textContent = `Stufe ${r.stufe + 1} von ${STUFEN.length} — ${stufe.name}`;
+    $('blatt-kopf-rechts').textContent = `${r.stufe + 1}/${STUFEN.length} · ${stufe.name}`;
     if (!training) $('hud-wert').textContent = zahl(rundenpunkte());
     aktualisiereStufenleiste();
 
@@ -519,8 +469,8 @@
     $('aufdecken-info').textContent = letzte
       ? 'alles aufgedeckt'
       : training
-        ? `weiter zu „${STUFEN[r.stufe + 1].name}“`
-        : `${STUFEN[r.stufe + 1].name} · dann noch ${zahl(Math.round(rundenwert(r.stufe + 1) * SCHWIERIGKEIT[spiel.stufe].faktor))} Punkte`;
+        ? STUFEN[r.stufe + 1].name
+        : `${STUFEN[r.stufe + 1].name} · ${zahl(Math.round(rundenwert(r.stufe + 1) * SCHWIERIGKEIT[spiel.stufe].faktor))}`;
 
     const auftrag = { font: r.schrift.n, text: r.proben[r.stufe], grad: stufe.grad };
     if (mitAnimation && !Einstellungen.hole('wenigerBewegung')) {
@@ -551,10 +501,7 @@
       <button type="button" class="taste" data-i="${i}">
         <span class="taste__kappe">
           <span class="taste__ziffer">${i + 1}</span>
-          <span class="taste__mitte">
-            <span class="taste__name">${f.n}</span>
-            <span class="taste__schild" hidden></span>
-          </span>
+          <span class="taste__name">${f.n}</span>
         </span>
       </button>`).join('');
     t.querySelectorAll('.taste').forEach(b => {
@@ -563,76 +510,28 @@
     t.dataset.spalten = spiel.runde.optionen.length > 6 ? '4' : (spiel.runde.optionen.length > 4 ? '3' : '2');
   }
 
-  /* ---------------- Tipps ---------------- */
+  /* ---------------- Verbleibende Versuche ---------------- */
 
-  /** Beschriftet die Antwortkästen mit allen bereits gekauften Merkmalen. */
-  function aktualisiereTastenschilder() {
-    const r = spiel.runde;
-    const offen = TIPPS.slice(0, r.tippStufe).filter(t => t.schild);
-
-    r.optionen.forEach((f, i) => {
-      const el = $('tastatur').querySelector(`.taste[data-i="${i}"] .taste__schild`);
-      if (!el) return;
-      const teile = offen.map(t => t.schild(f));
-      el.textContent = teile.join(' · ');
-      el.hidden = !teile.length;
-    });
+  /** Wie viele falsche Antworten diese Runde noch verträgt. */
+  function erlaubteFehler() {
+    return spiel.modus === 'training'
+      ? Infinity
+      : SCHWIERIGKEIT[spiel.stufe].fehlversuche;
   }
 
-  /** Aufschrift der Tippbox: nur der Preis des nächsten Tipps. */
-  function zeigeTippbox() {
-    const r = spiel.runde;
-    const knopf = $('tipp-knopf');
-    const naechster = TIPPS[r.tippStufe];
+  /** Punktreihe im Blattkopf: ausgefüllt = noch offen. */
+  function zeigeVersuche() {
+    const feld = $('versuche');
+    const erlaubt = erlaubteFehler();
 
-    if (!naechster || r.beendet) {
-      knopf.disabled = true;
-      $('tipp-preis').textContent = r.beendet ? '—' : 'keine Tipps mehr';
-      return;
-    }
-    knopf.disabled = false;
-    $('tipp-preis').textContent = spiel.modus === 'training'
-      ? 'kostenlos'
-      : `−${naechster.kosten} Punkte`;
-  }
+    if (!isFinite(erlaubt)) { feld.hidden = true; return; }
 
-  function kaufeTipp() {
-    const r = spiel.runde;
-    if (!r || r.beendet) return;
-    const tipp = TIPPS[r.tippStufe];
-    if (!tipp) return;
-
-    r.tippStufe++;
-    r.genutzteTipps.push(tipp.id);
-    if (spiel.modus !== 'training') r.tippkosten += tipp.kosten;
-    Sfx.tipp();
-
-    if (tipp.id === 'streichen') streicheFalscheAntwort();
-    aktualisiereTastenschilder();
-
-    const zeile = document.createElement('span');
-    zeile.className = 'tippausgabe__zeile';
-    zeile.textContent = tipp.meldung;
-    $('tippausgabe').appendChild(zeile);
-    $('tippausgabe').hidden = false;
-
-    zeigeTippbox();
-    zeigeStufe(false);
-  }
-
-  /** Streicht eine noch offene falsche Antwort — ohne Fehlgriff-Abzug. */
-  function streicheFalscheAntwort() {
-    const r = spiel.runde;
-    const offen = r.optionen.filter(f =>
-      f !== r.schrift && !r.fehler.includes(f) && !r.gestrichen.includes(f));
-    if (!offen.length) return;
-
-    const opfer = waehle(offen);
-    r.gestrichen.push(opfer);
-
-    const taste = $('tastatur').querySelector(`.taste[data-i="${r.optionen.indexOf(opfer)}"]`);
-    taste.disabled = true;
-    taste.classList.add('taste--gestrichen');
+    const gesamt = erlaubt + 1;                 // Wahlmöglichkeiten insgesamt
+    const offen = gesamt - spiel.runde.fehler.length;
+    feld.hidden = false;
+    feld.title = `${offen} von ${gesamt} Versuchen übrig`;
+    feld.innerHTML = Array.from({ length: gesamt }, (_, i) =>
+      `<span class="versuch${i < offen ? '' : ' versuch--weg'}"></span>`).join('');
   }
 
   /* ---------------- Spielzüge ---------------- */
@@ -672,10 +571,20 @@
       document.body.classList.add('erschuettert');
       setTimeout(() => document.body.classList.remove('erschuettert'), 400);
     }
+    zeigeVersuche();
 
-    if (r.optionen.length - r.fehler.length <= 1) {
+    /* Aus: entweder sind die Fehlversuche aufgebraucht oder es
+       bliebe ohnehin nur noch eine Antwort übrig. */
+    if (r.fehler.length > erlaubteFehler() ||
+        r.optionen.length - r.fehler.length <= 1) {
       beendeRunde(false, gewaehlt);
       return;
+    }
+
+    /* Ab „Schwer“ rückt eine neue Antwort nach, damit sich der
+       Kreis der Möglichkeiten nicht mit jedem Fehlgriff verengt. */
+    if (spiel.modus !== 'training' && SCHWIERIGKEIT[spiel.stufe].nachruecken) {
+      ruecheNach();
     }
 
     if (r.stufe < STUFEN.length - 1) {
@@ -684,6 +593,32 @@
     } else {
       zeigeStufe(false);
     }
+  }
+
+  /** Hängt eine weitere falsche Antwort an die Tastatur an. */
+  function ruecheNach() {
+    const r = spiel.runde;
+    const pool = auswahlFuerSpiel().filter(f =>
+      f !== r.schrift && !r.optionen.includes(f) &&
+      (!SCHWIERIGKEIT[spiel.stufe].gleicheGattung || f.cat === r.schrift.cat));
+    if (!pool.length) return;
+
+    const neue = waehle(pool);
+    r.optionen.push(neue);
+
+    const knopf = document.createElement('button');
+    knopf.type = 'button';
+    knopf.className = 'taste taste--neu';
+    knopf.dataset.i = String(r.optionen.length - 1);
+    knopf.innerHTML =
+      `<span class="taste__kappe">` +
+      `<span class="taste__ziffer">${r.optionen.length}</span>` +
+      `<span class="taste__name">${neue.n}</span></span>`;
+    knopf.addEventListener('click', () => antworte(parseInt(knopf.dataset.i, 10)));
+    $('tastatur').appendChild(knopf);
+
+    const t = $('tastatur');
+    t.dataset.spalten = r.optionen.length > 6 ? '4' : (r.optionen.length > 4 ? '3' : '2');
   }
 
   function loesungZeigen() {
@@ -700,7 +635,7 @@
     $('aufdecken-knopf').disabled = true;
     $('loesung-knopf').disabled = true;
     $('tastatur').querySelectorAll('.taste').forEach(b => { b.disabled = true; });
-    $('tipp-knopf').disabled = true;
+
 
     const training = spiel.modus === 'training';
     const punkte = (richtig && !training) ? rundenpunkte() : 0;
@@ -710,7 +645,7 @@
 
     spiel.protokoll.push({
       schrift: r.schrift, richtig, stufe: r.stufe,
-      fehler: r.fehler.length, tipps: r.genutzteTipps.length,
+      fehler: r.fehler.length,
       punkte, gewaehlt: richtig ? null : gewaehlt, zeitAbgelaufen, aufgegeben
     });
 
@@ -754,10 +689,7 @@
       vergleich.hidden = true;
     }
 
-    const zusatz = [];
-    if (r.fehler.length) zusatz.push(`${r.fehler.length}× falsch geraten`);
-    if (r.genutzteTipps.length) zusatz.push(`${r.genutzteTipps.length} Tipp${r.genutzteTipps.length > 1 ? 's' : ''}`);
-    const klammer = zusatz.length ? ` (${zusatz.join(', ')})` : '';
+    const klammer = r.fehler.length ? ` · ${r.fehler.length}× falsch` : '';
 
     $('aufloesung-punkte').textContent = training
       ? `${spiel.richtige} von ${spiel.rundeNr} richtig${klammer}`
@@ -791,7 +723,7 @@
     const p = spiel.protokoll;
     const ids = [];
     if (p.some(x => x.richtig && x.stufe === 0)) ids.push('blind');
-    if (p.some(x => x.richtig && x.stufe === 0 && x.fehler === 0 && x.tipps === 0)) ids.push('sparsam');
+    if (p.some(x => x.richtig && x.stufe === 0 && x.fehler === 0)) ids.push('sparsam');
     if (p.every(x => x.fehler === 0)) ids.push('rein');
     if (p.every(x => x.richtig)) ids.push('serie');
     if (p.some(x => x.richtig && x.stufe === STUFEN.length - 1)) ids.push('lupe');
@@ -809,9 +741,8 @@
     zeigeSchirm('ende');
     Sfx.stempel();
 
-    $('ende-modus').textContent = `Spiel · Schwierigkeit ${s.name}`;
+    $('ende-modus').textContent = s.name;
     $('zeugnis-rang').textContent = rang.titel;
-    $('zeugnis-vermerk').textContent = rang.text;
     zaehleHoch($('zeugnis-punkte'), 0, spiel.punkte, 1100);
 
     $('protokoll').innerHTML = spiel.protokoll.map((p, i) => {
@@ -820,7 +751,6 @@
         : p.zeitAbgelaufen ? 'Zeit abgelaufen' : 'nicht erkannt';
       const extra = [];
       if (p.fehler) extra.push(`${p.fehler}× falsch`);
-      if (p.tipps) extra.push(`${p.tipps} Tipp${p.tipps > 1 ? 's' : ''}`);
       return `<li class="protokoll__zeile${p.richtig ? '' : ' protokoll__zeile--daneben'}">
         <span class="protokoll__nr">${i + 1}</span>
         <span class="protokoll__schrift" style="font-family:'${p.schrift.n}', serif">${p.schrift.n}</span>
@@ -830,19 +760,16 @@
     }).join('');
 
     const orden = verdienteOrden();
-    $('orden-titel').hidden = false;
     $('orden').innerHTML = orden.length
-      ? orden.map(o => `<span class="orden__stueck"><b>${o.name}</b><small>${o.text}</small></span>`).join('')
-      : '<span class="orden__leer">Diesmal keine — beim nächsten Versuch vielleicht.</span>';
+      ? orden.map(o => `<span class="orden__stueck" title="${o.text}">${o.name}</span>`).join('')
+      : '';
 
     const alt = holeBest(spiel.stufe);
     if (spiel.punkte > alt) {
       localStorage.setItem(bestSchluessel(spiel.stufe), String(spiel.punkte));
-      $('bestwert-ende').textContent = alt
-        ? `Neuer Bestwert! Vorher: ${zahl(alt)} Punkte.`
-        : 'Dein erster Eintrag in der Bestenliste.';
+      $('bestwert-ende').textContent = alt ? `Neuer Bestwert (vorher ${zahl(alt)})` : 'Neuer Bestwert';
     } else {
-      $('bestwert-ende').textContent = `Dein Bestwert auf ${s.name}: ${zahl(alt)} Punkte.`;
+      $('bestwert-ende').textContent = `Bestwert: ${zahl(alt)}`;
     }
     zeigeBestenliste();
     zeigeStufenBestwert();
@@ -991,7 +918,6 @@
 
     /* Spiel */
     $('aufdecken-knopf').addEventListener('click', aufdecken);
-    $('tipp-knopf').addEventListener('click', kaufeTipp);
     $('loesung-knopf').addEventListener('click', loesungZeigen);
     $('weiter-knopf').addEventListener('click', weiter);
     $('training-ende-knopf').addEventListener('click', () => {

@@ -35,7 +35,7 @@ statische Webspace.
 |---|---|
 | **Spiel** | 5 Runden mit Punkten, Zeitlimit und Endergebnis |
 | **Trainingslager** | Üben ohne Punkte und Zeitdruck, dazu ein durchsuchbarer Schriftenkatalog |
-| **So wird gespielt** | Stufen, Punkte und Tipps kurz erklärt |
+| **Anleitung** | Stufen und Punkte, in aufklappbaren Kästen |
 | **Einstellungen** | Lautstärke für Musik und Soundeffekte, Animationen, Bestwerte |
 
 ### Die sieben Stufen
@@ -52,18 +52,22 @@ statische Webspace.
 
 * Eine **falsche Antwort** kostet 120 Punkte, streicht die Antwort durch und
   deckt automatisch eine Stufe mehr auf.
-* Bleibt nur noch eine Antwort übrig, endet die Runde ohne Punkte.
-* **Tipps** kosten Punkte: Gattung (60), Herkunft (110), Anfangsbuchstabe (150).
-  Im Trainingslager sind sie kostenlos.
+* Die **Versuche pro Runde sind begrenzt** — durchprobieren führt nicht zum
+  Ziel. Sind sie aufgebraucht, endet die Runde ohne Punkte.
+* Ab „Schwer“ **rückt nach jedem Fehlgriff eine neue Antwort nach**, damit sich
+  die Auswahl nicht mit jedem Versuch verengt.
+
+Die **Zeit** läuft nicht in einem eigenen Balken, sondern auf der Walze der
+Maschine: Das Leuchten darauf wird kürzer, bis es verschwunden ist.
 
 ### Schwierigkeitsgrade
 
-| Grad | Antworten | Schriften | Zeit | Punkte |
-|------|----------:|-----------|-----:|-------:|
-| Leicht | 4 | nur sehr bekannte | — | ×1,0 |
-| Mittel | 5 | bekannte | 60 s | ×1,4 |
-| Schwer | 6 | alle, gleiche Gattung | 40 s | ×1,9 |
-| Experte | 8 | alle, gleiche Gattung | 25 s | ×2,5 |
+| Grad | Antworten | Versuche | Schriften | Zeit | Punkte |
+|------|----------:|---------:|-----------|-----:|-------:|
+| Leicht | 4 | 2 | nur sehr bekannte | — | ×1,0 |
+| Mittel | 5 | 2 | bekannte | 60 s | ×1,4 |
+| Schwer | 6 | 3 + Nachrücker | alle, gleiche Gattung | 40 s | ×1,9 |
+| Experte | 8 | 3 + Nachrücker | alle, gleiche Gattung | 25 s | ×2,5 |
 
 Wie bekannt eine Schrift ist, steht in `js/fonts.js` unter `BEKANNTHEIT`.
 
@@ -85,7 +89,7 @@ js/audio.js           Soundeffekte (Web Audio, synthetisch erzeugt)
 js/music.js           Hintergrundmusik in Dauerschleife
 js/detect.js          Prüft, welche Schriften wirklich vorhanden sind
 js/specimen.js        Zeichnet die Schriftprobe aufs Canvas
-js/game.js            Spielablauf, Punkte, Tipps, Training, Ergebnis
+js/game.js            Spielablauf, Punkte, Training, Ergebnis
 tools/schriften-holen.mjs   Holt die Schriftdateien und schreibt schriften.css
 ```
 
