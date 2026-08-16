@@ -6,6 +6,9 @@
 <title>findthefont — Errate die Schriftart</title>
 <meta name="description" content="Errate die Schriftart anhand von immer mehr Zeichen — vom einzelnen Punkt bis zum ganzen Satz. Je weniger du aufdeckst, desto mehr Punkte gibt es.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Georgia,serif'>&#x2399;</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#241811">
+<link rel="apple-touch-icon" href="icon.svg">
 <link rel="stylesheet" href="css/schriften.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -425,5 +428,14 @@
 <script src="js/detect.js"></script>
 <script src="js/specimen.js"></script>
 <script src="js/game.js"></script>
+<script>
+  /* Offline-Betrieb und Installierbarkeit. Fehlschläge sind
+     unkritisch — die Seite läuft auch ohne. */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>

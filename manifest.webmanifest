@@ -1,0 +1,16 @@
+{
+  "name": "findthefont — Errate die Schriftart",
+  "short_name": "findthefont",
+  "description": "Errate die Schriftart anhand von immer mehr Zeichen — vom einzelnen Punkt bis zum ganzen Satz.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#241811",
+  "theme_color": "#241811",
+  "lang": "de",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

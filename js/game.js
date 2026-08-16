@@ -381,7 +381,7 @@
     return mische(gewaehlt.concat([ziel]));
   }
 
-  function naechsteRunde() {
+  async function naechsteRunde() {
     spiel.rundeNr++;
 
     const training = spiel.modus === 'training';
@@ -424,8 +424,19 @@
     baueStufenleiste();
     zeigeVersuche();
     Walze.leere();
+
+    /* Die Schriften liegen zwar bei, sind aber noch nicht geladen —
+       ohne dieses Warten zeichnete die Walze die Ausweichschrift. */
+    const laufendeRunde = spiel.runde;
+    await FontDepot.load([ziel.n]);
+    if (spiel.runde !== laufendeRunde) return;      // inzwischen weitergeblättert
+
     zeigeStufe(true);
     starteUhr();
+
+    /* Die Antworten der Runde werden nachher in der Auflösung
+       gezeigt — im Hintergrund schon einmal holen. */
+    FontDepot.vorladen(spiel.runde.optionen.map(f => f.n));
   }
 
   /* ---------------- Zeitlimit ---------------- */
@@ -1052,7 +1063,9 @@
 
     let ausgang = 'fehler';
     try {
-      ausgang = await Ergebnisbild.teileOderLade(bilddaten(), name);
+      const daten = bilddaten();
+      await FontDepot.load(daten.runden.map(r => r.name).filter(Boolean));
+      ausgang = await Ergebnisbild.teileOderLade(daten, name);
     } catch (e) {
       ausgang = 'fehler';
     }
