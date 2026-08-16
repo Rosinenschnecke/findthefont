@@ -1,0 +1,915 @@
+/* ============================================================
+   findthefont — Ausstattung der Werkstatt
+   Farben: Nussbaum-Werkbank, Büttenpapier, Farbband rot/schwarz,
+   Messing für alles, was glänzen darf.
+   ============================================================ */
+
+:root {
+  --holz-tief:    #17100b;
+  --holz:         #241811;
+  --holz-hell:    #3a281c;
+
+  --papier:       #f3e9d2;
+  --papier-schatten: #d9cbac;
+  --papier-alt:   #e8dbbc;
+
+  --tinte:        #241f1c;
+  --tinte-blass:  #6b6157;
+
+  --band-rot:     #b0362b;
+  --band-rot-hell:#d0503f;
+  --messing:      #c9a227;
+  --messing-tief: #8a6f18;
+
+  --metall:       #34302b;
+  --metall-hell:  #4c463f;
+  --metall-tief:  #1c1916;
+
+  --schrift-titel: 'Special Elite', 'Courier New', monospace;
+  --schrift-text:  'Courier Prime', 'Courier New', monospace;
+
+  --radius: 4px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  min-height: 100%;
+  /* Die Werkbank liegt auf dem Wurzelelement — so bleibt das Holz
+     auch unter langen Seiten und beim Überscrollen sichtbar. */
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(201,162,39,.10), transparent 60%),
+    repeating-linear-gradient(96deg, rgba(0,0,0,.16) 0 3px, rgba(255,255,255,.015) 3px 7px),
+    linear-gradient(165deg, var(--holz-hell), var(--holz) 45%, var(--holz-tief));
+  background-attachment: fixed;
+  background-color: var(--holz-tief);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--schrift-text);
+  color: var(--papier);
+  background: transparent;
+}
+
+/* Feiner Staub über der ganzen Werkstatt */
+.staub {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+body.erschuettert { animation: ruettel .38s ease; }
+@keyframes ruettel {
+  0%,100% { transform: translate(0,0) }
+  20% { transform: translate(-5px, 2px) rotate(-.25deg) }
+  45% { transform: translate(4px, -2px) rotate(.2deg) }
+  70% { transform: translate(-2px, 1px) }
+}
+
+/* ══════════════ Firmenschild ══════════════ */
+
+.firmenschild {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem clamp(.9rem, 3vw, 2.2rem);
+  border-bottom: 2px solid rgba(0,0,0,.5);
+  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.05));
+  backdrop-filter: blur(2px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.marke__typ {
+  display: block;
+  font-family: var(--schrift-titel);
+  font-size: clamp(1.35rem, 3.4vw, 1.9rem);
+  letter-spacing: .04em;
+  color: var(--papier);
+  text-shadow: 0 2px 0 rgba(0,0,0,.6);
+}
+.marke__the { color: var(--band-rot-hell); }
+.marke__zusatz {
+  display: block;
+  font-size: .66rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--tinte-blass);
+  margin-top: .15rem;
+}
+
+.metallknopf {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--schrift-titel);
+  font-size: .82rem;
+  letter-spacing: .06em;
+  color: var(--papier);
+  padding: .5rem .9rem;
+  border: 1px solid var(--metall-tief);
+  border-radius: 999px;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--metall-hell), var(--metall));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 5px rgba(0,0,0,.45);
+  transition: transform .12s, filter .15s;
+}
+.metallknopf:hover { filter: brightness(1.14); }
+.metallknopf:active { transform: translateY(1px); }
+.metallknopf__lampe {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--messing);
+  box-shadow: 0 0 8px rgba(201,162,39,.9);
+}
+.metallknopf--aus .metallknopf__lampe { background: #55504a; box-shadow: none; }
+
+/* ══════════════ Schirme ══════════════ */
+
+main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
+
+.schirm { display: none; animation: einblenden .45s ease both; }
+.schirm--aktiv { display: block; }
+@keyframes einblenden { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+
+.hinweis { color: var(--tinte-blass); font-size: .86rem; line-height: 1.6; }
+.hinweis--klein { font-size: .74rem; }
+
+/* ══════════════ Ladeschirm ══════════════ */
+
+.karte {
+  max-width: 460px;
+  margin: 8vh auto;
+  padding: 2rem 1.6rem;
+  text-align: center;
+  border: 1px solid rgba(201,162,39,.25);
+  border-radius: var(--radius);
+  background: rgba(0,0,0,.28);
+}
+.karte__titel {
+  font-family: var(--schrift-titel);
+  font-weight: 400;
+  font-size: 1.3rem;
+  margin: .4rem 0 .6rem;
+}
+
+.maschinen-signet svg { width: 190px; max-width: 70%; }
+.sig-korpus { fill: var(--metall); stroke: rgba(255,255,255,.12); }
+.sig-walze  { fill: var(--metall-hell); }
+.sig-papier { fill: var(--papier); }
+.sig-zeile  { stroke: var(--tinte-blass); stroke-width: 3; stroke-linecap: round; }
+.sig-fuss   { fill: var(--metall-tief); }
+.sig-tasten circle { fill: var(--messing); opacity: .85; animation: tastenblink 1.6s infinite; }
+.sig-tasten circle:nth-child(2) { animation-delay: .14s }
+.sig-tasten circle:nth-child(3) { animation-delay: .28s }
+.sig-tasten circle:nth-child(4) { animation-delay: .42s }
+.sig-tasten circle:nth-child(5) { animation-delay: .56s }
+.sig-tasten circle:nth-child(6) { animation-delay: .70s }
+.sig-tasten circle:nth-child(7) { animation-delay: .84s }
+@keyframes tastenblink { 0%,100% { opacity:.3; transform: translateY(0) } 50% { opacity:1; transform: translateY(-2px) } }
+
+.ladebalken {
+  height: 10px;
+  margin-top: 1.1rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,.5);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.ladebalken__farbband {
+  height: 100%;
+  width: 4%;
+  transition: width .5s ease;
+  background: linear-gradient(90deg, var(--band-rot), var(--band-rot-hell) 60%, var(--messing));
+}
+
+/* ══════════════ Plakat (Start) ══════════════ */
+
+.plakat {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: clamp(1.4rem, 4vw, 2.8rem);
+  color: var(--tinte);
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.014) 0 2px, transparent 2px 4px),
+    linear-gradient(150deg, var(--papier), var(--papier-alt));
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.35),
+    0 0 0 8px var(--papier),
+    0 0 0 10px rgba(0,0,0,.4),
+    0 26px 50px rgba(0,0,0,.55);
+  text-align: center;
+  position: relative;
+}
+.plakat::before,
+.plakat::after {
+  content: '';
+  position: absolute;
+  left: 1.4rem; right: 1.4rem;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, var(--tinte) 0 12px, transparent 12px 18px);
+  opacity: .55;
+}
+.plakat::before { top: .9rem }
+.plakat::after  { bottom: .9rem }
+
+.plakat__zeile-oben {
+  font-family: var(--schrift-titel);
+  letter-spacing: .3em;
+  font-size: .72rem;
+  text-transform: uppercase;
+  color: var(--band-rot);
+  margin: .5rem 0 1rem;
+}
+.plakat__titel {
+  font-family: var(--schrift-titel);
+  font-weight: 400;
+  font-size: clamp(2.1rem, 7.5vw, 3.6rem);
+  line-height: 1.05;
+  margin: 0 0 .8rem;
+  letter-spacing: .01em;
+  text-shadow: 1px 1px 0 rgba(0,0,0,.16);
+}
+.plakat__untertitel {
+  max-width: 52ch;
+  margin: 0 auto 1.6rem;
+  font-size: .95rem;
+  line-height: 1.75;
+  color: #4a4038;
+}
+
+/* Stufenübersicht auf dem Plakat */
+.stufenschau {
+  border-top: 2px solid rgba(36,31,28,.3);
+  border-bottom: 2px solid rgba(36,31,28,.3);
+  padding: .9rem 0;
+  margin-bottom: 1.6rem;
+}
+.stufenschau ol { list-style: none; margin: 0; padding: 0; }
+.stufenschau__eintrag {
+  display: grid;
+  grid-template-columns: 1.7rem 1fr auto;
+  align-items: center;
+  gap: .7rem;
+  padding: .28rem .3rem;
+  text-align: left;
+  border-bottom: 1px dotted rgba(36,31,28,.28);
+}
+.stufenschau__eintrag:last-child { border-bottom: 0 }
+.stufenschau__nr {
+  font-family: var(--schrift-titel);
+  width: 1.7rem; height: 1.7rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--tinte);
+  color: var(--papier);
+  font-size: .78rem;
+}
+.stufenschau__name { font-size: .92rem }
+.stufenschau__wert {
+  font-family: var(--schrift-titel);
+  color: var(--band-rot);
+  font-size: .9rem;
+}
+.stufenschau__eintrag:nth-child(n+2) .stufenschau__nr { background: var(--tinte-blass) }
+
+/* Dienstgrad-Wahl */
+.wahl { margin-bottom: 1.5rem }
+.wahl__titel {
+  font-family: var(--schrift-titel);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 0 0 .7rem;
+}
+.wahl__reihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  justify-content: center;
+}
+.gradknopf {
+  font-family: var(--schrift-text);
+  cursor: pointer;
+  padding: .55rem 1rem;
+  border: 2px solid var(--tinte);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tinte);
+  text-align: center;
+  transition: background .15s, color .15s, transform .1s;
+}
+.gradknopf:hover { transform: translateY(-2px) }
+.gradknopf--aktiv { background: var(--tinte); color: var(--papier) }
+.gradknopf__name {
+  display: block;
+  font-family: var(--schrift-titel);
+  font-size: 1rem;
+}
+.gradknopf__detail { display: block; font-size: .7rem; opacity: .75 }
+#grad-hinweis { margin: .7rem auto 0; max-width: 46ch; color: #574c42 }
+
+/* Der große Hebel */
+.wagenhebel {
+  display: inline-block;
+  cursor: pointer;
+  font-family: var(--schrift-titel);
+  padding: .9rem 2.2rem;
+  border: 0;
+  border-radius: 3px;
+  color: var(--papier);
+  background: linear-gradient(180deg, var(--band-rot-hell), var(--band-rot) 55%, #8c261d);
+  box-shadow: 0 5px 0 #6d1c15, 0 12px 22px rgba(0,0,0,.45);
+  transition: transform .1s, box-shadow .1s;
+}
+.wagenhebel:hover { filter: brightness(1.07) }
+.wagenhebel:active { transform: translateY(4px); box-shadow: 0 1px 0 #6d1c15, 0 6px 12px rgba(0,0,0,.45) }
+.wagenhebel:disabled { filter: grayscale(.7); cursor: not-allowed; opacity: .6 }
+.wagenhebel__text { display: block; font-size: 1.12rem; letter-spacing: .04em }
+.wagenhebel__unterschrift {
+  display: block;
+  font-family: var(--schrift-text);
+  font-size: .68rem;
+  opacity: .8;
+  margin-top: .15rem;
+}
+.wagenhebel--klein { padding: .7rem 1.5rem }
+.wagenhebel--klein .wagenhebel__text { font-size: .98rem }
+
+.bestwert {
+  font-family: var(--schrift-titel);
+  margin: 1.2rem 0 .3rem;
+  color: var(--tinte);
+  font-size: .9rem;
+}
+#lager-info { color: #5c5148; max-width: 50ch; margin: 0 auto }
+
+/* ══════════════ Die Maschine ══════════════ */
+
+.maschine {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: clamp(.8rem, 2.4vw, 1.4rem);
+  border-radius: 14px 14px 20px 20px;
+  background:
+    linear-gradient(180deg, var(--metall-hell), var(--metall) 30%, var(--metall-tief));
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.1),
+    inset 0 -3px 12px rgba(0,0,0,.6),
+    0 22px 44px rgba(0,0,0,.6);
+  border: 1px solid rgba(0,0,0,.6);
+}
+
+.maschine__leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  justify-content: space-between;
+  margin-bottom: .9rem;
+}
+.anzeige {
+  flex: 1 1 30%;
+  min-width: 120px;
+  padding: .45rem .7rem;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #100e0c, #1d1a16);
+  border: 1px solid rgba(0,0,0,.8);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.8);
+  text-align: center;
+}
+.anzeige__schild {
+  display: block;
+  font-size: .6rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--tinte-blass);
+}
+.anzeige__wert {
+  display: block;
+  font-family: var(--schrift-titel);
+  font-size: 1.32rem;
+  color: var(--messing);
+  text-shadow: 0 0 12px rgba(201,162,39,.35);
+}
+.anzeige--wert .anzeige__wert { color: var(--band-rot-hell); text-shadow: 0 0 12px rgba(208,80,63,.35) }
+.zaehlwerk { font-variant-numeric: tabular-nums }
+
+/* Walze mit Knäufen */
+.walzenbalken {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  margin: 0 .2rem -6px;
+  position: relative;
+  z-index: 3;
+}
+.walzenbalken__riffel {
+  flex: 1;
+  height: 22px;
+  border-radius: 11px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.45) 0 2px, rgba(255,255,255,.06) 2px 6px),
+    linear-gradient(180deg, #6a625a, #2e2a25);
+  box-shadow: inset 0 2px 3px rgba(255,255,255,.18), 0 4px 8px rgba(0,0,0,.5);
+}
+.walzenknauf {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #d7cbb6, #6e6559 55%, #2c2823);
+  box-shadow: 0 3px 6px rgba(0,0,0,.6);
+}
+
+/* Das Blatt Papier */
+.blatt {
+  position: relative;
+  padding: 1.1rem 1rem .7rem;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 5px),
+    linear-gradient(175deg, #fbf4e2, var(--papier) 55%, var(--papier-schatten));
+  border-radius: 2px 2px 5px 5px;
+  box-shadow: 0 14px 26px rgba(0,0,0,.5), inset 0 -12px 20px rgba(0,0,0,.06);
+  color: var(--tinte);
+  transform-origin: top center;
+}
+.blatt--eingespannt { animation: einziehen .7s cubic-bezier(.22,1,.32,1) both }
+@keyframes einziehen {
+  0%   { transform: translateY(-46px) scaleY(.55); opacity: 0 }
+  60%  { opacity: 1 }
+  100% { transform: none; opacity: 1 }
+}
+.blatt--ruck { animation: vorschub .3s ease }
+@keyframes vorschub {
+  0% { transform: translateY(0) }
+  40% { transform: translateY(-7px) }
+  100% { transform: translateY(0) }
+}
+.blatt__lochung {
+  position: absolute;
+  top: 6px; left: 0; right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(90deg, transparent 0 16px, rgba(0,0,0,.13) 16px 20px);
+  opacity: .5;
+}
+.blatt__kopf {
+  display: flex;
+  justify-content: space-between;
+  gap: .6rem;
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6d6154;
+  border-bottom: 1px solid rgba(36,31,28,.16);
+  padding-bottom: .45rem;
+}
+
+.probe {
+  display: block;
+  width: 100%;
+  height: clamp(190px, 34vh, 320px);
+}
+
+.blatt__fuss { border-top: 1px solid rgba(36,31,28,.16); padding-top: .5rem }
+
+/* Stufenleiste als Kerben am Blattrand */
+.stufenleiste {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: .3rem;
+  margin: 0; padding: 0;
+}
+.kerbe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+}
+.kerbe__marke {
+  width: 100%;
+  height: 7px;
+  border-radius: 2px;
+  background: rgba(36,31,28,.14);
+  transition: background .25s, box-shadow .25s;
+}
+.kerbe__nr { font-size: .62rem; color: #8a7f70 }
+.kerbe--auf .kerbe__marke { background: var(--tinte-blass) }
+.kerbe--auf .kerbe__nr { color: #6d6154 }
+.kerbe--jetzt .kerbe__marke {
+  background: var(--band-rot);
+  box-shadow: 0 0 10px rgba(176,54,43,.6);
+}
+.kerbe--jetzt .kerbe__nr { color: var(--band-rot); font-weight: 700 }
+
+/* ══════════════ Bedienfeld ══════════════ */
+
+.bedienfeld {
+  margin-top: 1.1rem;
+  display: grid;
+  gap: .9rem;
+}
+
+.hebel {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  width: 100%;
+  cursor: pointer;
+  padding: .7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.6);
+  color: var(--papier);
+  text-align: left;
+  background: linear-gradient(180deg, #45403a, #2a2621);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 4px 10px rgba(0,0,0,.5);
+  transition: transform .1s, filter .15s;
+}
+.hebel:hover:not(:disabled) { filter: brightness(1.12) }
+.hebel:active:not(:disabled) { transform: translateY(2px) }
+.hebel:disabled { opacity: .45; cursor: not-allowed }
+.hebel__stange {
+  width: 14px; height: 34px;
+  flex: none;
+  border-radius: 7px;
+  background: linear-gradient(180deg, var(--messing), var(--messing-tief));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 2px 5px rgba(0,0,0,.6);
+  transition: transform .18s;
+}
+.hebel:active:not(:disabled) .hebel__stange { transform: rotate(16deg) translateY(3px) }
+.hebel__beschriftung strong {
+  display: block;
+  font-family: var(--schrift-titel);
+  font-size: 1.02rem;
+  letter-spacing: .04em;
+}
+.hebel__beschriftung small { color: var(--tinte-blass); font-size: .74rem }
+
+/* Die Tastatur */
+.tastatur {
+  display: grid;
+  gap: .6rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+.tastatur[data-spalten="3"] { grid-template-columns: repeat(3, 1fr) }
+.tastatur[data-spalten="4"] { grid-template-columns: repeat(4, 1fr) }
+
+.taste {
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  perspective: 400px;
+}
+.taste__kappe {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 62px;
+  padding: .6rem .7rem;
+  border-radius: 12px;
+  color: var(--papier);
+  background: linear-gradient(180deg, #46403a 0%, #2b2620 60%, #201c18 100%);
+  border: 1px solid rgba(0,0,0,.75);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.16),
+    inset 0 -6px 10px rgba(0,0,0,.5),
+    0 6px 0 #14110e,
+    0 10px 16px rgba(0,0,0,.5);
+  transition: transform .09s, box-shadow .09s, filter .15s;
+}
+.taste:hover:not(:disabled) .taste__kappe { filter: brightness(1.15) }
+.taste:active:not(:disabled) .taste__kappe {
+  transform: translateY(5px);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 0 -3px 8px rgba(0,0,0,.5), 0 1px 0 #14110e;
+}
+.taste:disabled { cursor: not-allowed }
+.taste__ziffer {
+  flex: none;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  font-family: var(--schrift-titel);
+  font-size: .72rem;
+  color: var(--metall-tief);
+  background: linear-gradient(180deg, #e0d3b4, #b3a586);
+  box-shadow: inset 0 -1px 2px rgba(0,0,0,.4);
+}
+.taste__name {
+  font-family: var(--schrift-titel);
+  font-size: clamp(.78rem, 2vw, .96rem);
+  letter-spacing: .02em;
+  line-height: 1.25;
+}
+
+.taste--treffer .taste__kappe {
+  background: linear-gradient(180deg, #4d7a3f, #2f5127);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 6px 0 #1d3418, 0 0 26px rgba(120,190,100,.45);
+  animation: treffer .5s ease;
+}
+@keyframes treffer {
+  0% { transform: scale(1) } 40% { transform: scale(1.07) } 100% { transform: scale(1) }
+}
+.taste--verklemmt .taste__kappe {
+  background: linear-gradient(180deg, #3a2320, #241615);
+  color: #7b6a66;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.7), 0 2px 0 #14110e;
+  transform: translateY(4px) rotate(-1.4deg);
+  text-decoration: line-through;
+  text-decoration-color: var(--band-rot);
+  text-decoration-thickness: 2px;
+}
+
+/* ══════════════ Auflösung ══════════════ */
+
+.aufloesung {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(10,7,5,.72);
+  backdrop-filter: blur(3px);
+  animation: einblenden .3s ease both;
+}
+.aufloesung[hidden] { display: none }
+
+.aufloesung__blatt {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 2rem 1.6rem 1.6rem;
+  text-align: center;
+  color: var(--tinte);
+  background: linear-gradient(160deg, #fbf4e2, var(--papier-alt));
+  border-radius: 3px;
+  box-shadow: 0 24px 50px rgba(0,0,0,.7);
+  animation: zettelrein .45s cubic-bezier(.2,1,.3,1) both;
+}
+@keyframes zettelrein {
+  from { transform: translateY(30px) rotate(-1.2deg); opacity: 0 }
+  to   { transform: none; opacity: 1 }
+}
+
+.stempel {
+  position: absolute;
+  top: .9rem; right: .9rem;
+  font-family: var(--schrift-titel);
+  font-size: .95rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .35rem .8rem;
+  border: 3px double currentColor;
+  border-radius: 3px;
+  transform: rotate(9deg);
+  opacity: .82;
+  animation: stempeln .4s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes stempeln {
+  from { transform: rotate(9deg) scale(2.4); opacity: 0 }
+  to   { transform: rotate(9deg) scale(1); opacity: .82 }
+}
+.stempel--gut { color: #3f6b32 }
+.stempel--schlecht { color: var(--band-rot) }
+
+.aufloesung__vorspann {
+  font-size: .72rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: #7a6e60;
+  margin: 0 0 .3rem;
+}
+.aufloesung__name {
+  font-size: clamp(1.9rem, 6vw, 2.7rem);
+  margin: 0 0 .3rem;
+  line-height: 1.15;
+  word-break: break-word;
+}
+.aufloesung__meta {
+  font-size: .8rem;
+  color: #6d6154;
+  margin: 0 0 1rem;
+}
+.aufloesung__probe {
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  margin: 0 0 1rem;
+  padding: .7rem .4rem;
+  border-top: 1px solid rgba(36,31,28,.2);
+  border-bottom: 1px solid rgba(36,31,28,.2);
+  word-break: break-word;
+}
+.aufloesung__wissen {
+  font-size: .88rem;
+  line-height: 1.7;
+  color: #4c4238;
+  max-width: 46ch;
+  margin: 0 auto 1.1rem;
+}
+
+.aufloesung__vergleich {
+  border: 1px dashed rgba(176,54,43,.55);
+  border-radius: 3px;
+  padding: .7rem;
+  margin-bottom: 1.1rem;
+  background: rgba(176,54,43,.06);
+}
+.vergleich__schild {
+  display: block;
+  font-size: .62rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--band-rot);
+  margin-bottom: .25rem;
+}
+.vergleich__probe { font-size: 1.35rem; margin: 0 0 .2rem; word-break: break-word }
+.vergleich__name { font-size: .78rem; color: #6d6154 }
+
+.aufloesung__punkte {
+  font-family: var(--schrift-titel);
+  font-size: 1.28rem;
+  margin: 0 0 1.2rem;
+  color: var(--band-rot);
+}
+
+/* ══════════════ Zeugnis ══════════════ */
+
+.zeugnis {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 10px;
+  color: var(--tinte);
+  background: linear-gradient(150deg, var(--papier), var(--papier-alt));
+  box-shadow: 0 24px 50px rgba(0,0,0,.6);
+  border-radius: 2px;
+}
+.zeugnis__zierrand {
+  border: 3px double rgba(36,31,28,.55);
+  padding: clamp(1.3rem, 4vw, 2.4rem) clamp(1rem, 4vw, 2.4rem) 1.6rem;
+  text-align: center;
+  position: relative;
+}
+.zeugnis__kopf {
+  font-family: var(--schrift-titel);
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  font-size: .68rem;
+  color: #7a6e60;
+  margin: 0;
+}
+.zeugnis__titel {
+  font-family: var(--schrift-titel);
+  font-weight: 400;
+  font-size: clamp(2rem, 7vw, 3rem);
+  margin: .3rem 0 .1rem;
+  letter-spacing: .12em;
+}
+.zeugnis__sub { font-size: .8rem; color: #6d6154; margin: 0 0 1.4rem }
+
+.zeugnis__rang {
+  font-family: var(--schrift-titel);
+  font-size: clamp(1.3rem, 4.5vw, 1.9rem);
+  color: var(--band-rot);
+  margin: 0 0 .2rem;
+}
+.zeugnis__punkte {
+  font-family: var(--schrift-titel);
+  font-size: clamp(2.6rem, 10vw, 4rem);
+  line-height: 1;
+  margin: .3rem 0 .2rem;
+}
+.zeugnis__punkte small {
+  display: block;
+  font-family: var(--schrift-text);
+  font-size: .68rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: #7a6e60;
+}
+.zeugnis__vermerk {
+  font-size: .9rem;
+  line-height: 1.7;
+  color: #4c4238;
+  max-width: 48ch;
+  margin: .8rem auto 1.6rem;
+}
+
+.protokoll { list-style: none; margin: 0 0 1.4rem; padding: 0; text-align: left }
+.protokoll__zeile {
+  display: grid;
+  grid-template-columns: 1.4rem 1fr auto;
+  grid-template-areas: 'nr schrift punkte' '. stufe punkte';
+  gap: .1rem .6rem;
+  align-items: baseline;
+  padding: .5rem .2rem;
+  border-bottom: 1px dotted rgba(36,31,28,.3);
+}
+.protokoll__nr { grid-area: nr; font-family: var(--schrift-titel); color: #7a6e60; font-size: .8rem }
+.protokoll__schrift { grid-area: schrift; font-size: 1.12rem; line-height: 1.25 }
+.protokoll__stufe { grid-area: stufe; font-size: .72rem; color: #7a6e60 }
+.protokoll__punkte {
+  grid-area: punkte;
+  font-family: var(--schrift-titel);
+  font-size: 1rem;
+  align-self: center;
+}
+.protokoll__zeile--daneben .protokoll__punkte { color: var(--band-rot) }
+
+.orden {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.orden__stueck {
+  display: block;
+  padding: .45rem .8rem;
+  border: 1px solid rgba(138,111,24,.6);
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(201,162,39,.18), rgba(201,162,39,.06));
+  text-align: center;
+  max-width: 220px;
+}
+.orden__stueck b {
+  display: block;
+  font-family: var(--schrift-titel);
+  font-weight: 400;
+  font-size: .92rem;
+  color: #6c5510;
+}
+.orden__stueck small { font-size: .68rem; color: #6d6154; line-height: 1.4; display: block }
+.orden__leer { font-size: .8rem; color: #7a6e60 }
+
+.zeugnis__knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: .8rem;
+}
+.zeugnis__knoepfe .metallknopf { color: var(--papier) }
+#bestwert-ende { color: #6d6154 }
+
+/* ══════════════ Werkbank (Fuß) ══════════════ */
+
+.werkbank {
+  text-align: center;
+  padding: 1.4rem 1rem 2.2rem;
+  font-size: .72rem;
+  color: var(--tinte-blass);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  justify-content: center;
+}
+.werkbank__trenner { opacity: .5 }
+
+/* ══════════════ Kleine Bildschirme ══════════════ */
+
+@media (max-width: 620px) {
+  .tastatur,
+  .tastatur[data-spalten="3"],
+  .tastatur[data-spalten="4"] { grid-template-columns: repeat(2, 1fr) }
+  .taste__kappe { min-height: 56px; flex-direction: column; gap: .2rem }
+  .taste__ziffer { width: 18px; height: 18px; font-size: .62rem }
+
+  .maschine__leiste {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .35rem;
+  }
+  .anzeige { min-width: 0; padding: .35rem .3rem }
+  .anzeige__schild { font-size: .5rem; letter-spacing: .1em }
+  .anzeige__wert { font-size: 1rem }
+
+  .firmenschild { padding: .6rem .8rem }
+  .marke__zusatz { font-size: .56rem; letter-spacing: .1em }
+  .metallknopf { padding: .4rem .7rem; font-size: .72rem }
+
+  .probe { height: clamp(160px, 28vh, 220px) }
+  .hebel { padding: .6rem .8rem }
+  .walzenknauf { width: 20px; height: 20px }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
