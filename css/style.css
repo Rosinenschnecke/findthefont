@@ -1108,6 +1108,7 @@ kbd {
   color: var(--metall-tief);
 }
 .menuekarte__marke { grid-area: marke }
+.menuekarte__marke--offen { background: var(--rot); color: var(--papier-warm) }
 
 .kennzahlen {
   list-style: none;

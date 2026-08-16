@@ -108,6 +108,12 @@
 
   const waehle = arr => arr[Math.floor(wuerfel() * arr.length)];
 
+  /** Macht Eingaben für die HTML-Ausgabe unschädlich. */
+  function entschaerfe(text) {
+    return String(text).replace(/[&<>"']/g, z =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[z]));
+  }
+
   function mische(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -284,6 +290,8 @@
   function baueKatalog() {
     const suche = ($('katalog-suche').value || '').trim().toLowerCase();
     const gattung = $('katalog-gattung').value || 'alle';
+    const eigener = ($('katalog-text').value || '').trim();
+    const probe = entschaerfe(eigener || 'Hamburgefonstiv');
     const liste = spiel.lager
       .filter(f => (gattung === 'alle' || f.cat === gattung) && f.n.toLowerCase().includes(suche))
       .sort((a, b) => a.n.localeCompare(b.n, 'de'));
@@ -291,7 +299,7 @@
     $('katalog').innerHTML = liste.length ? liste.map((f, i) => `
       <li class="katalog__zeile">
         <button class="katalog__kopf" type="button" data-i="${i}" aria-expanded="false">
-          <span class="katalog__probe" style="font-family:'${f.n}', serif">Hamburgefonstiv</span>
+          <span class="katalog__probe" style="font-family:'${f.n}', serif">${probe}</span>
           <span class="katalog__namen">
             <span class="katalog__name">${f.n}</span>
             <span class="katalog__gattung">${CATEGORY_LABELS[f.cat]}</span>
@@ -301,7 +309,7 @@
           <p class="katalog__meta">${f.m}</p>
           <p class="katalog__wissen">${f.t}</p>
           <p class="katalog__zeile-probe" style="font-family:'${f.n}', serif">
-            ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 . , ; : ! ?
+            ${eigener ? probe + '<br>' : ''}ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 . , ; : ! ?
           </p>
         </div>
       </li>`).join('')
@@ -833,15 +841,25 @@
 
   /** Aufschrift der Menükarte: gespielt, offen, Serie. */
   function zeigeTageskarte() {
-    const heute = Tagesspiel.hole(Tagesspiel.heute());
+    const gespielt = Tagesspiel.hole(Tagesspiel.heute());
     const serie = Tagesspiel.serie();
-    $('karte-taeglich-text').textContent = heute
-      ? `Heute gespielt: ${zahl(heute.p)} Punkte`
+
+    $('karte-taeglich-text').textContent = gespielt
+      ? `Heute gespielt: ${zahl(gespielt.p)} Punkte`
       : 'Für alle dieselben fünf Schriften';
-    $('karte-taeglich-serie').textContent = serie.aktuell > 1
-      ? `${serie.aktuell} Tage in Folge`
-      : '';
-    $('karte-taeglich-serie').hidden = serie.aktuell <= 1;
+
+    /* Die Serie ist der Grund wiederzukommen — also zeigen, sobald
+       es eine gibt, und daran erinnern, wenn sie heute noch hängt. */
+    let marke = '';
+    if (serie.aktuell > 0) {
+      marke = serie.aktuell === 1
+        ? '1 Tag in Folge'
+        : `${serie.aktuell} Tage in Folge`;
+      if (!gespielt) marke += ' — heute noch offen';
+    }
+    $('karte-taeglich-serie').textContent = marke;
+    $('karte-taeglich-serie').hidden = !marke;
+    $('karte-taeglich-serie').classList.toggle('menuekarte__marke--offen', !gespielt && serie.aktuell > 0);
   }
 
   let uhrBisMorgen = null;
@@ -991,6 +1009,61 @@
     else fertig();
   }
 
+  /** Sammelt die Angaben, aus denen das Bild gezeichnet wird. */
+  function bilddaten() {
+    const taeglich = spiel.modus === 'taeglich';
+    const gespeichert = taeglich ? Tagesspiel.hole(spiel.datum) : null;
+
+    let runden;
+    if (spiel.protokoll.length) {
+      runden = spiel.protokoll.map(p => ({
+        name: p.schrift.n, stufe: p.stufe, richtig: p.richtig
+      }));
+    } else if (gespeichert) {
+      runden = gespeichert.s.map((stufe, i) => ({
+        name: (gespeichert.n || [])[i] || '',
+        stufe: Math.max(0, stufe),
+        richtig: stufe >= 0
+      }));
+    } else {
+      runden = [];
+    }
+
+    return {
+      titel: taeglich
+        ? `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`
+        : `Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
+      punkte: spiel.punkte,
+      rang: $('zeugnis-rang').textContent,
+      runden,
+      fuss: 'rosinenschnecke.github.io/findthefont'
+    };
+  }
+
+  async function ergebnisAlsBild() {
+    const knopf = $('bild-knopf');
+    const alt = knopf.textContent;
+    knopf.disabled = true;
+    knopf.textContent = 'Moment …';
+
+    const name = spiel.modus === 'taeglich'
+      ? `findthefont-${spiel.datum}.png`
+      : 'findthefont-ergebnis.png';
+
+    let ausgang = 'fehler';
+    try {
+      ausgang = await Ergebnisbild.teileOderLade(bilddaten(), name);
+    } catch (e) {
+      ausgang = 'fehler';
+    }
+
+    knopf.textContent = { geteilt: 'Geteilt!', geladen: 'Gespeichert!',
+                          abgebrochen: alt, fehler: 'Ging nicht' }[ausgang] || alt;
+    Sfx.stempel();
+    knopf.disabled = false;
+    setTimeout(() => { knopf.textContent = alt; }, 2200);
+  }
+
   /* ---------------- Verlassen ---------------- */
 
   async function zurueckZumMenue() {
@@ -1117,6 +1190,7 @@
     $('training-start').addEventListener('click', () => { Sfx.taste(); starteSpiel('training'); });
     $('katalog-gattung').addEventListener('change', baueKatalog);
     $('katalog-suche').addEventListener('input', baueKatalog);
+    $('katalog-text').addEventListener('input', baueKatalog);
 
     /* Spiel */
     $('aufdecken-knopf').addEventListener('click', aufdecken);
@@ -1133,6 +1207,7 @@
     $('nochmal-knopf').addEventListener('click', () => { Sfx.taste(); starteSpiel('klassisch'); });
     $('stufe-wechseln-knopf').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('schwierigkeit'); });
     $('kopieren-knopf').addEventListener('click', ergebnisKopieren);
+    $('bild-knopf').addEventListener('click', ergebnisAlsBild);
 
     /* Fenster */
     $('einstellungen-knopf').addEventListener('click', oeffneEinstellungen);

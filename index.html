@@ -208,9 +208,14 @@
             <span class="feld__schild">Gattung</span>
             <select id="katalog-gattung" class="feld__auswahl"></select>
           </label>
-          <label class="feld feld--breit">
+          <label class="feld">
             <span class="feld__schild">Suchen</span>
             <input id="katalog-suche" class="feld__eingabe" type="search" placeholder="Name der Schrift">
+          </label>
+          <label class="feld feld--breit">
+            <span class="feld__schild">Probetext</span>
+            <input id="katalog-text" class="feld__eingabe" type="text"
+                   placeholder="Hamburgefonstiv" maxlength="60">
           </label>
         </div>
         <ul class="katalog" id="katalog"></ul>
@@ -321,6 +326,7 @@
           <button id="nochmal-knopf" class="hauptknopf" type="button">Nochmal</button>
           <button id="stufe-wechseln-knopf" class="nebenknopf" type="button">Schwierigkeit</button>
           <button id="kopieren-knopf" class="nebenknopf" type="button">Kopieren</button>
+          <button id="bild-knopf" class="nebenknopf" type="button">Als Bild</button>
           <button class="nebenknopf" type="button" data-ziel="menue">Startseite</button>
         </div>
         <p class="hinweis hinweis--klein" id="bestwert-ende"></p>
@@ -412,6 +418,7 @@
 
 <script src="js/fonts.js"></script>
 <script src="js/daily.js"></script>
+<script src="js/share.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/music.js"></script>
