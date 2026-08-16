@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>findthefont — Die Schriftsetzerei</title>
-<meta name="description" content="Errate die Schriftart anhand von immer mehr Zeichen. Je weniger du aufdeckst, desto mehr Punkte bekommst du.">
+<title>findthefont — Errate die Schriftart</title>
+<meta name="description" content="Errate die Schriftart anhand von immer mehr Zeichen — vom einzelnen Punkt bis zum ganzen Satz. Je weniger du aufdeckst, desto mehr Punkte gibt es.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='Georgia,serif'>&#x2399;</text></svg>">
 <link rel="stylesheet" href="css/schriften.css">
 <link rel="stylesheet" href="css/style.css">
@@ -13,19 +13,25 @@
 
 <div class="staub" aria-hidden="true"></div>
 
-<header class="firmenschild">
-  <div class="firmenschild__marke">
+<header class="kopfleiste">
+  <button id="logo-knopf" class="marke" type="button" title="Zur Startseite">
     <span class="marke__typ">find<span class="marke__the">the</span>font</span>
-    <span class="marke__zusatz">Schriftsetzerei &amp; Typenlager · gegr. 1886</span>
-  </div>
-  <button id="ton-schalter" class="metallknopf" type="button" aria-pressed="true" title="Werkstattgeräusche an/aus">
-    <span class="metallknopf__lampe"></span><span id="ton-text">Ton an</span>
+    <span class="marke__zusatz">Errate die Schriftart</span>
   </button>
+
+  <nav class="kopfleiste__knoepfe">
+    <button id="menue-knopf" class="metallknopf" type="button" hidden>
+      <span aria-hidden="true">←</span> <span class="knopf__text">Startseite</span>
+    </button>
+    <button id="einstellungen-knopf" class="metallknopf" type="button" title="Einstellungen">
+      <span aria-hidden="true">⚙</span> <span class="knopf__text">Einstellungen</span>
+    </button>
+  </nav>
 </header>
 
 <main>
 
-  <!-- ══════════════ Ladeschirm ══════════════ -->
+  <!-- ══════════════ Laden ══════════════ -->
   <section id="schirm-laden" class="schirm schirm--aktiv">
     <div class="karte karte--mittig">
       <div class="maschinen-signet" aria-hidden="true">
@@ -45,61 +51,204 @@
           <rect x="24" y="128" width="192" height="10" rx="5" class="sig-fuss"/>
         </svg>
       </div>
-      <h2 class="karte__titel">Der Setzkasten wird sortiert</h2>
-      <p class="hinweis" id="lade-text">Typenlager wird geöffnet …</p>
+      <h2 class="karte__titel">Schriften werden geladen</h2>
+      <p class="hinweis" id="lade-text">Einen Moment …</p>
       <div class="ladebalken"><div class="ladebalken__farbband" id="lade-balken"></div></div>
     </div>
   </section>
 
-  <!-- ══════════════ Startschirm ══════════════ -->
-  <section id="schirm-start" class="schirm">
-    <div class="plakat">
-      <p class="plakat__zeile-oben">◆ Willkommen in der Werkstatt ◆</p>
-      <h1 class="plakat__titel">Erkennst du<br>die Schrift?</h1>
-      <p class="plakat__untertitel">
-        Wir spannen ein Blatt ein und schlagen ein einziges Zeichen an: einen Punkt.
-        Mehr bekommst du erst, wenn du den Hebel ziehst — und jeder Zug kostet dich Punkte.
-        Ein Fehlgriff verklemmt die Taste, kostet 120 Punkte und schiebt die Walze
-        eine Stufe weiter. Fünf Proben, dann stellen wir dein Zeugnis aus.
+  <!-- ══════════════ Startseite ══════════════ -->
+  <section id="schirm-menue" class="schirm">
+    <div class="blattseite blattseite--breit">
+      <p class="ueberzeile">Ein Ratespiel über Schriftarten</p>
+      <h1 class="grossertitel">Erkennst du<br>die Schrift?</h1>
+      <p class="einleitung">
+        Wir zeigen dir ein Schriftzeichen — zuerst nur einen Punkt. Erkennst du
+        die Schriftart daran, gibt es die volle Punktzahl. Du kannst jederzeit
+        mehr aufdecken, das kostet aber Punkte.
       </p>
 
-      <div class="stufenschau">
-        <ol id="stufenschau-liste"></ol>
+      <div class="menuekarten">
+        <button class="menuekarte menuekarte--haupt" id="karte-spiel" type="button">
+          <span class="menuekarte__symbol" aria-hidden="true">▶</span>
+          <span class="menuekarte__titel">Spiel starten</span>
+          <span class="menuekarte__text">5 Runden mit Punkten, Zeitlimit und Endergebnis.</span>
+        </button>
+        <button class="menuekarte" id="karte-training" type="button">
+          <span class="menuekarte__symbol" aria-hidden="true">✎</span>
+          <span class="menuekarte__titel">Trainingslager</span>
+          <span class="menuekarte__text">Üben ohne Punkte und ohne Zeitdruck. Oder alle Schriften in Ruhe ansehen.</span>
+        </button>
+        <button class="menuekarte" id="karte-anleitung" type="button">
+          <span class="menuekarte__symbol" aria-hidden="true">?</span>
+          <span class="menuekarte__titel">So wird gespielt</span>
+          <span class="menuekarte__text">Stufen, Punkte und Tipps kurz erklärt.</span>
+        </button>
+        <button class="menuekarte" id="karte-einstellungen" type="button">
+          <span class="menuekarte__symbol" aria-hidden="true">⚙</span>
+          <span class="menuekarte__titel">Einstellungen</span>
+          <span class="menuekarte__text">Lautstärke für Musik und Soundeffekte.</span>
+        </button>
       </div>
 
-      <div class="wahl">
-        <h3 class="wahl__titel">Wähle deinen Dienstgrad</h3>
-        <div class="wahl__reihe" id="grad-wahl" role="radiogroup" aria-label="Schwierigkeit"></div>
-        <p class="hinweis" id="grad-hinweis"></p>
+      <div class="bestenliste">
+        <h2 class="abschnittstitel">Deine Bestwerte</h2>
+        <ul id="bestenliste"></ul>
       </div>
 
-      <button id="start-knopf" class="wagenhebel" type="button">
-        <span class="wagenhebel__text">Blatt einspannen</span>
-        <span class="wagenhebel__unterschrift">5 Proben · Leertaste</span>
-      </button>
-
-      <p class="bestwert" id="bestwert"></p>
       <p class="hinweis hinweis--klein" id="lager-info"></p>
     </div>
   </section>
 
-  <!-- ══════════════ Spielschirm ══════════════ -->
+  <!-- ══════════════ Schwierigkeit ══════════════ -->
+  <section id="schirm-schwierigkeit" class="schirm">
+    <div class="blattseite">
+      <p class="ueberzeile">Schritt 1 von 1</p>
+      <h1 class="grossertitel grossertitel--klein">Wie schwer darf&nbsp;es sein?</h1>
+      <p class="einleitung einleitung--schmal">
+        Der Unterschied liegt darin, wie bekannt die Schriften sind, wie viele
+        Antworten zur Auswahl stehen und wie viel Zeit du pro Runde hast.
+      </p>
+
+      <div class="stufenwahl" id="stufenwahl"></div>
+
+      <div class="knopfreihe">
+        <button id="losgehts-knopf" class="hauptknopf" type="button">Spiel starten</button>
+      </div>
+      <p class="hinweis hinweis--klein" id="stufenwahl-bestwert"></p>
+    </div>
+  </section>
+
+  <!-- ══════════════ Anleitung ══════════════ -->
+  <section id="schirm-anleitung" class="schirm">
+    <div class="blattseite">
+      <p class="ueberzeile">Kurz erklärt</p>
+      <h1 class="grossertitel grossertitel--klein">So wird gespielt</h1>
+
+      <h2 class="abschnittstitel">Die sieben Stufen</h2>
+      <p class="fliesstext">
+        Jede Runde beginnt mit Stufe 1. Mit dem Knopf <strong>„Mehr aufdecken“</strong>
+        kommst du zur nächsten Stufe — dafür sinkt der Wert der Runde.
+      </p>
+      <ol class="stufenliste" id="anleitung-stufen"></ol>
+
+      <h2 class="abschnittstitel">Punkte</h2>
+      <ul class="fliessliste">
+        <li>Du bekommst die Punkte der Stufe, auf der du richtig geraten hast.</li>
+        <li>Eine <strong>falsche Antwort</strong> kostet 120 Punkte, streicht die
+            Antwort durch und deckt automatisch eine Stufe mehr auf.</li>
+        <li>Bleibt nur noch eine Antwort übrig, ist die Runde vorbei — ohne Punkte.</li>
+        <li>Die Schwierigkeit multipliziert deine Punkte am Ende jeder Runde.</li>
+      </ul>
+
+      <h2 class="abschnittstitel">Tipps kaufen</h2>
+      <p class="fliesstext">
+        Wenn du nicht weiterkommst, kannst du dir Hinweise zur gesuchten Schrift
+        kaufen. Jeder Tipp zieht Punkte von der laufenden Runde ab:
+      </p>
+      <ul class="fliessliste" id="anleitung-tipps"></ul>
+
+      <h2 class="abschnittstitel">Tastatur</h2>
+      <ul class="fliessliste">
+        <li><kbd>1</kbd>–<kbd>8</kbd> wählen eine Antwort</li>
+        <li><kbd>Leertaste</kbd> deckt die nächste Stufe auf bzw. blättert weiter</li>
+        <li><kbd>Esc</kbd> schließt Fenster</li>
+      </ul>
+
+      <div class="knopfreihe">
+        <button class="hauptknopf" type="button" data-ziel="menue">Zurück zur Startseite</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ Trainingslager ══════════════ -->
+  <section id="schirm-training" class="schirm">
+    <div class="blattseite blattseite--breit">
+      <p class="ueberzeile">Ohne Punkte, ohne Zeitdruck</p>
+      <h1 class="grossertitel grossertitel--klein">Trainingslager</h1>
+
+      <div class="reiter" role="tablist">
+        <button class="reiter__knopf reiter__knopf--aktiv" data-reiter="ueben" role="tab" type="button">Üben</button>
+        <button class="reiter__knopf" data-reiter="katalog" role="tab" type="button">Alle Schriften ansehen</button>
+      </div>
+
+      <div class="reiter__inhalt reiter__inhalt--aktiv" data-inhalt="ueben">
+        <p class="einleitung einleitung--schmal">
+          Gleiche Regeln, aber nichts wird gewertet: Tipps sind kostenlos, die
+          Zeit läuft nicht, und du kannst dir die Lösung jederzeit anzeigen lassen.
+        </p>
+
+        <div class="feldgruppe">
+          <label class="feld">
+            <span class="feld__schild">Gattung</span>
+            <select id="training-gattung" class="feld__auswahl"></select>
+          </label>
+          <label class="feld">
+            <span class="feld__schild">Bekanntheit</span>
+            <select id="training-bekanntheit" class="feld__auswahl">
+              <option value="1">nur sehr bekannte</option>
+              <option value="2" selected>bekannte</option>
+              <option value="3">alle</option>
+            </select>
+          </label>
+          <label class="feld">
+            <span class="feld__schild">Antworten zur Auswahl</span>
+            <select id="training-optionen" class="feld__auswahl">
+              <option value="4" selected>4</option>
+              <option value="6">6</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+        </div>
+        <p class="hinweis hinweis--klein" id="training-anzahl"></p>
+
+        <div class="knopfreihe">
+          <button id="training-start" class="hauptknopf" type="button">Training starten</button>
+        </div>
+      </div>
+
+      <div class="reiter__inhalt" data-inhalt="katalog">
+        <p class="einleitung einleitung--schmal">
+          Alle Schriften, die auf diesem Gerät zur Verfügung stehen. Tippe auf
+          eine Zeile, um Gattung, Herkunft und eine Notiz dazu zu sehen.
+        </p>
+        <div class="feldgruppe">
+          <label class="feld">
+            <span class="feld__schild">Gattung</span>
+            <select id="katalog-gattung" class="feld__auswahl"></select>
+          </label>
+          <label class="feld feld--breit">
+            <span class="feld__schild">Suchen</span>
+            <input id="katalog-suche" class="feld__eingabe" type="search" placeholder="Name der Schrift">
+          </label>
+        </div>
+        <ul class="katalog" id="katalog"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ Spiel ══════════════ -->
   <section id="schirm-spiel" class="schirm">
     <div class="maschine">
 
-      <div class="maschine__leiste">
+      <div class="maschine__leiste" id="hud">
         <div class="anzeige">
-          <span class="anzeige__schild">Auftrag</span>
-          <span class="anzeige__wert" id="auftrag-zaehler">1 / 5</span>
+          <span class="anzeige__schild" id="hud-schild-1">Runde</span>
+          <span class="anzeige__wert" id="hud-runde">1 / 5</span>
         </div>
-        <div class="anzeige anzeige--zaehlwerk">
-          <span class="anzeige__schild">Punktekonto</span>
-          <span class="anzeige__wert zaehlwerk" id="punkte-zaehler">0</span>
+        <div class="anzeige">
+          <span class="anzeige__schild" id="hud-schild-2">Punkte</span>
+          <span class="anzeige__wert zaehlwerk" id="hud-punkte">0</span>
         </div>
         <div class="anzeige anzeige--wert">
-          <span class="anzeige__schild">Diese Probe wert</span>
-          <span class="anzeige__wert" id="probenwert">1000</span>
+          <span class="anzeige__schild" id="hud-schild-3">Diese Runde wert</span>
+          <span class="anzeige__wert" id="hud-wert">1000</span>
         </div>
+      </div>
+
+      <div class="zeitleiste" id="zeitleiste" hidden>
+        <div class="zeitleiste__balken" id="zeitbalken"></div>
+        <span class="zeitleiste__zahl" id="zeitzahl">60</span>
       </div>
 
       <div class="walzenbalken" aria-hidden="true">
@@ -111,8 +260,8 @@
       <div class="blatt" id="blatt">
         <div class="blatt__lochung" aria-hidden="true"></div>
         <div class="blatt__kopf">
-          <span id="blatt-kopf-links">Probe Nr. 1</span>
-          <span id="blatt-kopf-rechts">Stufe 1 — Der Punkt</span>
+          <span id="blatt-kopf-links">Runde 1</span>
+          <span id="blatt-kopf-rechts">Stufe 1 von 7 — Punkt</span>
         </div>
         <canvas id="probe" class="probe" aria-label="Schriftprobe"></canvas>
         <div class="blatt__fuss">
@@ -121,63 +270,48 @@
       </div>
 
       <div class="bedienfeld">
-        <button id="hebel-knopf" class="hebel" type="button">
-          <span class="hebel__stange" aria-hidden="true"></span>
-          <span class="hebel__beschriftung">
-            <strong>Hebel ziehen</strong>
-            <small id="hebel-info">nächste Stufe · kostet Punkte</small>
-          </span>
-        </button>
+        <div class="werkzeugreihe">
+          <button id="aufdecken-knopf" class="werkzeug werkzeug--breit" type="button">
+            <span class="werkzeug__titel">Mehr aufdecken</span>
+            <span class="werkzeug__preis" id="aufdecken-info">nächste Stufe</span>
+          </button>
+          <button id="loesung-knopf" class="werkzeug" type="button" hidden>
+            <span class="werkzeug__titel">Lösung zeigen</span>
+            <span class="werkzeug__preis">nur im Training</span>
+          </button>
+        </div>
+
+        <div class="tippreihe" id="tippreihe"></div>
+        <p class="tippausgabe" id="tippausgabe" hidden></p>
+
         <div class="tastatur" id="tastatur" role="group" aria-label="Antwortmöglichkeiten"></div>
       </div>
 
     </div>
-
-    <!-- Aufklappende Auflösung -->
-    <div class="aufloesung" id="aufloesung" hidden>
-      <div class="aufloesung__blatt">
-        <div class="stempel" id="stempel"><span id="stempel-text">richtig</span></div>
-        <p class="aufloesung__vorspann" id="aufloesung-vorspann">Gesetzt in</p>
-        <p class="aufloesung__name" id="aufloesung-name">Futura</p>
-        <p class="aufloesung__meta" id="aufloesung-meta"></p>
-        <p class="aufloesung__probe" id="aufloesung-probe">Hamburgefonstiv 123</p>
-        <p class="aufloesung__wissen" id="aufloesung-wissen"></p>
-        <div class="aufloesung__vergleich" id="aufloesung-vergleich" hidden>
-          <span class="vergleich__schild">Dein Griff in den Kasten</span>
-          <p class="vergleich__probe" id="vergleich-probe"></p>
-          <span class="vergleich__name" id="vergleich-name"></span>
-        </div>
-        <p class="aufloesung__punkte" id="aufloesung-punkte"></p>
-        <button id="weiter-knopf" class="wagenhebel wagenhebel--klein" type="button">
-          <span class="wagenhebel__text" id="weiter-text">Nächstes Blatt</span>
-          <span class="wagenhebel__unterschrift">Leertaste</span>
-        </button>
-      </div>
-    </div>
   </section>
 
-  <!-- ══════════════ Zeugnis ══════════════ -->
+  <!-- ══════════════ Ergebnis ══════════════ -->
   <section id="schirm-ende" class="schirm">
     <div class="zeugnis">
       <div class="zeugnis__zierrand">
-        <p class="zeugnis__kopf">Schriftsetzerei findthefont</p>
-        <h2 class="zeugnis__titel">Zeugnis</h2>
-        <p class="zeugnis__sub">über die Prüfung im Erkennen von Druckschriften</p>
+        <p class="ueberzeile" id="ende-modus">Spiel · Mittel</p>
+        <h1 class="zeugnis__titel">Ergebnis</h1>
 
-        <p class="zeugnis__rang" id="zeugnis-rang">Meisterhand</p>
+        <p class="zeugnis__rang" id="zeugnis-rang">—</p>
         <p class="zeugnis__punkte"><span id="zeugnis-punkte">0</span><small>Punkte</small></p>
         <p class="zeugnis__vermerk" id="zeugnis-vermerk"></p>
 
+        <h2 class="abschnittstitel">Die fünf Runden</h2>
         <ol class="protokoll" id="protokoll"></ol>
 
+        <h2 class="abschnittstitel" id="orden-titel">Auszeichnungen</h2>
         <div class="orden" id="orden"></div>
 
-        <div class="zeugnis__knoepfe">
-          <button id="nochmal-knopf" class="wagenhebel wagenhebel--klein" type="button">
-            <span class="wagenhebel__text">Neues Blatt einspannen</span>
-            <span class="wagenhebel__unterschrift">Leertaste</span>
-          </button>
-          <button id="teilen-knopf" class="metallknopf" type="button">Ergebnis abtippen</button>
+        <div class="knopfreihe">
+          <button id="nochmal-knopf" class="hauptknopf" type="button">Nochmal spielen</button>
+          <button id="stufe-wechseln-knopf" class="nebenknopf" type="button">Schwierigkeit wechseln</button>
+          <button id="kopieren-knopf" class="nebenknopf" type="button">Ergebnis kopieren</button>
+          <button class="nebenknopf" type="button" data-ziel="menue">Startseite</button>
         </div>
         <p class="hinweis hinweis--klein" id="bestwert-ende"></p>
       </div>
@@ -186,14 +320,84 @@
 
 </main>
 
-<footer class="werkbank">
-  <span>Jede Probe wird im Moment des Anschlags frisch gesetzt.</span>
-  <span class="werkbank__trenner">·</span>
+<!-- ══════════════ Auflösung nach jeder Runde ══════════════ -->
+<div class="ueberblendung" id="aufloesung" hidden>
+  <div class="ueberblendung__blatt">
+    <div class="stempel" id="stempel"><span id="stempel-text">richtig</span></div>
+    <p class="aufloesung__vorspann" id="aufloesung-vorspann">Richtig erkannt</p>
+    <p class="aufloesung__name" id="aufloesung-name">—</p>
+    <p class="aufloesung__meta" id="aufloesung-meta"></p>
+    <p class="aufloesung__probe" id="aufloesung-probe">Hamburgefonstiv 0123</p>
+    <p class="aufloesung__wissen" id="aufloesung-wissen"></p>
+    <div class="aufloesung__vergleich" id="aufloesung-vergleich" hidden>
+      <span class="vergleich__schild">Deine Antwort</span>
+      <p class="vergleich__probe" id="vergleich-probe"></p>
+      <span class="vergleich__name" id="vergleich-name"></span>
+    </div>
+    <p class="aufloesung__punkte" id="aufloesung-punkte"></p>
+    <div class="knopfreihe">
+      <button id="weiter-knopf" class="hauptknopf" type="button">Weiter</button>
+      <button id="training-ende-knopf" class="nebenknopf" type="button" hidden>Training beenden</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ Einstellungen ══════════════ -->
+<div class="ueberblendung" id="einstellungen-fenster" hidden>
+  <div class="ueberblendung__blatt ueberblendung__blatt--eng">
+    <button class="schliessen" id="einstellungen-schliessen" type="button" aria-label="Schließen">×</button>
+    <h2 class="fenster__titel">Einstellungen</h2>
+
+    <div class="regler">
+      <div class="regler__kopf">
+        <label for="regler-musik">Musik</label>
+        <button class="schalter" id="schalter-musik" type="button" aria-pressed="true">an</button>
+      </div>
+      <input id="regler-musik" class="regler__schieber" type="range" min="0" max="100" step="1">
+      <span class="regler__wert" id="wert-musik">35 %</span>
+    </div>
+
+    <div class="regler">
+      <div class="regler__kopf">
+        <label for="regler-sfx">Soundeffekte</label>
+        <button class="schalter" id="schalter-sfx" type="button" aria-pressed="true">an</button>
+      </div>
+      <input id="regler-sfx" class="regler__schieber" type="range" min="0" max="100" step="1">
+      <span class="regler__wert" id="wert-sfx">70 %</span>
+    </div>
+
+    <div class="haken">
+      <label><input type="checkbox" id="haken-tippen"> Tippgeräusch beim Aufdecken</label>
+      <label><input type="checkbox" id="haken-bewegung"> Animationen reduzieren</label>
+    </div>
+
+    <div class="knopfreihe knopfreihe--links">
+      <button id="bestwerte-loeschen" class="nebenknopf nebenknopf--warnung" type="button">Bestwerte löschen</button>
+    </div>
+    <p class="hinweis hinweis--klein" id="einstellungen-fuss"></p>
+  </div>
+</div>
+
+<!-- ══════════════ Rückfrage ══════════════ -->
+<div class="ueberblendung" id="rueckfrage" hidden>
+  <div class="ueberblendung__blatt ueberblendung__blatt--eng">
+    <h2 class="fenster__titel" id="rueckfrage-titel">Sicher?</h2>
+    <p class="fliesstext" id="rueckfrage-text"></p>
+    <div class="knopfreihe">
+      <button id="rueckfrage-ja" class="hauptknopf" type="button">Ja</button>
+      <button id="rueckfrage-nein" class="nebenknopf" type="button">Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<footer class="fussleiste">
   <span id="lager-fuss"></span>
 </footer>
 
 <script src="js/fonts.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/music.js"></script>
 <script src="js/detect.js"></script>
 <script src="js/specimen.js"></script>
 <script src="js/game.js"></script>

@@ -1,99 +1,119 @@
 /* ============================================================
-   findthefont — der Betrieb der Setzerei
+   findthefont — Spielablauf
    ============================================================ */
 
 (() => {
   'use strict';
 
-  /* ---------------- Die sieben Stufen der Enthüllung ---------------- */
+  /* ---------------- Die sieben Stufen ---------------- */
 
   const STUFEN = [
-    {
-      name: 'Der Punkt', wert: 1000, grad: 900,
-      probe: () => '.',
-      erklaerung: 'Rund, quadratisch oder rautenförmig? Der Punkt verrät die Bauart.'
-    },
-    {
-      name: 'Das Komma', wert: 800, grad: 820,
-      probe: () => ',',
-      erklaerung: 'Der Schwung des Kommas zeigt, ob eine Feder Pate stand.'
-    },
-    {
-      name: 'Ein Buchstabe', wert: 620, grad: 520,
-      probe: () => waehle(['a', 'g', 'R', 'e', 'k', 'y', 'S', 'Q']),
-      erklaerung: 'Ein- oder zweistöckig? Offene oder geschlossene Punze?'
-    },
-    {
-      name: 'Ein kurzes Wort', wert: 460, grad: 320,
-      probe: () => waehle(['Typ', 'Hut', 'Zug', 'Reh', 'Gas', 'Eis', 'Blei']),
-      erklaerung: 'Jetzt zeigt sich, wie die Buchstaben miteinander auskommen.'
-    },
-    {
-      name: 'Ein langes Wort', wert: 320, grad: 200,
-      probe: () => waehle(['Schriftsetzerei', 'Buchstabenkasten', 'Druckerpresse', 'Federzeichnung', 'Handsatzregal']),
-      erklaerung: 'Laufweite und Rhythmus werden sichtbar.'
-    },
-    {
-      name: 'Ein kurzer Satz', wert: 200, grad: 120,
-      probe: () => waehle([
+    { name: 'Punkt',        wert: 1000, grad: 900, probe: () => '.' },
+    { name: 'Komma',        wert: 800,  grad: 820, probe: () => ',' },
+    { name: 'Buchstabe',    wert: 620,  grad: 520, probe: () => waehle(['a', 'g', 'R', 'e', 'k', 'y', 'S', 'Q']) },
+    { name: 'Kurzes Wort',  wert: 460,  grad: 320, probe: () => waehle(['Typ', 'Hut', 'Zug', 'Reh', 'Gas', 'Eis', 'Blei']) },
+    { name: 'Langes Wort',  wert: 320,  grad: 200, probe: () => waehle(['Schriftsetzerei', 'Buchstabenkasten', 'Druckerpresse', 'Federzeichnung', 'Handsatzregal']) },
+    { name: 'Kurzer Satz',  wert: 200,  grad: 120, probe: () => waehle([
         'Der Setzer greift zur Lupe.',
         'Die Presse klappert im Hinterhof.',
         'Ein Blatt Papier, frisch gespannt.',
         'Das Farbband ist fast verbraucht.'
-      ]),
-      erklaerung: 'Im Satzbild verrät sich fast jede Schrift.'
+      ]) },
+    { name: 'Ganzes Alphabet', wert: 110, grad: 84,
+      probe: () => 'Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. 0123456789' }
+  ];
+
+  /* ---------------- Schwierigkeitsgrade ---------------- */
+
+  const SCHWIERIGKEIT = {
+    leicht: {
+      name: 'Leicht', optionen: 4, zeit: 0, faktor: 1.0, bekanntheit: 1, gleicheGattung: false,
+      text: 'Nur Schriften, die fast jeder schon gesehen hat. Kein Zeitlimit.'
+    },
+    mittel: {
+      name: 'Mittel', optionen: 5, zeit: 60, faktor: 1.4, bekanntheit: 2, gleicheGattung: false,
+      text: 'Auch Schriften, die einem im Web und in Office begegnen. 60 Sekunden pro Runde.'
+    },
+    schwer: {
+      name: 'Schwer', optionen: 6, zeit: 40, faktor: 1.9, bekanntheit: 3, gleicheGattung: true,
+      text: 'Alle Schriften. Die Auswahl stammt immer aus derselben Gattung. 40 Sekunden.'
+    },
+    experte: {
+      name: 'Experte', optionen: 8, zeit: 25, faktor: 2.5, bekanntheit: 3, gleicheGattung: true,
+      text: 'Acht verwandte Schriften, 25 Sekunden. Für Leute mit gutem Auge.'
+    }
+  };
+
+  /* ---------------- Tipps ---------------- */
+
+  const TIPPS = [
+    {
+      id: 'gattung', name: 'Gattung', kosten: 60,
+      text: f => `Gattung: ${CATEGORY_LABELS[f.cat]}${GATTUNG_ERKLAERUNG[f.cat] ? ' — ' + GATTUNG_ERKLAERUNG[f.cat] : ''}`
     },
     {
-      name: 'Das Pangramm', wert: 110, grad: 84,
-      probe: () => 'Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. 0123456789',
-      erklaerung: 'Jeder Buchstabe des Alphabets — mehr können wir nicht hergeben.'
+      id: 'herkunft', name: 'Herkunft', kosten: 110,
+      text: f => `Entworfen von ${f.m}.`
+    },
+    {
+      id: 'buchstabe', name: 'Anfangsbuchstabe', kosten: 150,
+      text: f => `Der Name beginnt mit „${f.n[0]}“.`
     }
   ];
 
-  const GRADE = {
-    lehrling: { name: 'Lehrling',  tasten: 4, faktor: 1.0, streng: false, info: '4 Schriften zur Auswahl, gern auch aus verschiedenen Gattungen.' },
-    geselle:  { name: 'Geselle',   tasten: 6, faktor: 1.4, streng: true,  info: '6 Schriften — und alle aus derselben Gattung. Kein Schummeln über die Form.' },
-    meister:  { name: 'Meister',   tasten: 8, faktor: 1.8, streng: true,  info: '8 verwandte Schriften. Nur für Augen mit Fadenzähler.' }
+  const GATTUNG_ERKLAERUNG = {
+    sans:    'ohne Serifen',
+    serif:   'mit Serifen',
+    slab:    'mit betont rechteckigen Serifen',
+    mono:    'alle Zeichen gleich breit',
+    display: 'für große Überschriften gemacht',
+    script:  'wirkt wie mit der Hand geschrieben'
   };
 
-  const PROBEN_JE_RUNDE = 5;
+  const RUNDEN_JE_SPIEL = 5;
   const FEHLERKOSTEN = 120;
-  const TROSTPUNKTE = 30;
+  const MINDESTPUNKTE = 30;
 
   const RAENGE = [
-    { ab: 0.90, titel: 'Meisterhand',                 vermerk: 'Die Werkstatt verneigt sich. Du liest Schrift wie andere Leute Verkehrsschilder.' },
-    { ab: 0.75, titel: 'Erste Kraft am Setzkasten',   vermerk: 'Sehr sichere Griffe. Der Meister lässt dich künftig allein an die Presse.' },
-    { ab: 0.58, titel: 'Gesellenbrief',               vermerk: 'Solide Arbeit. Ein paar Hebelzüge zu viel, aber das Blatt sitzt sauber.' },
-    { ab: 0.40, titel: 'Fleißiges Lehrjahr',          vermerk: 'Der Blick schärft sich. Achte das nächste Mal genauer auf die Serifen.' },
-    { ab: 0.22, titel: 'Erste Woche in der Werkstatt',vermerk: 'Noch viel Farbband verbraucht — aber jeder fängt am Punkt an.' },
-    { ab: 0,    titel: 'Tinte an den Fingern',        vermerk: 'Papierverbrauch beträchtlich. Wir üben das morgen noch einmal.' }
+    { ab: 0.90, titel: 'Schriftexperte',   text: 'Beeindruckend. Du erkennst Schriften an fast nichts.' },
+    { ab: 0.75, titel: 'Sehr sicher',      text: 'Starke Runde — nur wenige Stufen zu viel aufgedeckt.' },
+    { ab: 0.58, titel: 'Gut im Blick',     text: 'Solide. Achte beim nächsten Mal früher auf die Serifen.' },
+    { ab: 0.40, titel: 'Auf dem Weg',      text: 'Die Richtung stimmt. Punkt und Komma verraten oft mehr, als man denkt.' },
+    { ab: 0.22, titel: 'Noch am Üben',     text: 'Schau dir im Trainingslager ein paar Schriften in Ruhe an.' },
+    { ab: 0,    titel: 'Erster Versuch',   text: 'Aller Anfang ist schwer. Im Trainingslager geht es ohne Punktedruck.' }
   ];
 
   const ORDEN = [
-    { id: 'blind',   name: 'Blindsetzer',      text: 'Eine Schrift allein am Punkt erkannt.' },
-    { id: 'sparsam', name: 'Sparsam am Hebel', text: 'Eine Probe ohne einen einzigen Hebelzug gelöst.' },
-    { id: 'rein',    name: 'Reine Weste',      text: 'Keine einzige Fehltaste in der ganzen Runde.' },
-    { id: 'serie',   name: 'Voller Auftrag',   text: 'Alle fünf Proben richtig bestimmt.' },
-    { id: 'lupe',    name: 'Der Fadenzähler',  text: 'Eine Probe erst am Pangramm geknackt — aber geknackt.' }
+    { id: 'blind',   name: 'Nur ein Punkt',    text: 'Eine Schrift allein am Punkt erkannt.' },
+    { id: 'sparsam', name: 'Ohne Hilfe',       text: 'Eine Runde ohne Aufdecken und ohne Tipp gelöst.' },
+    { id: 'rein',    name: 'Fehlerfrei',       text: 'Keine einzige falsche Antwort im ganzen Spiel.' },
+    { id: 'serie',   name: 'Alle fünf',        text: 'Alle fünf Schriften richtig bestimmt.' },
+    { id: 'lupe',    name: 'Nicht aufgegeben', text: 'Eine Schrift erst auf der letzten Stufe geknackt.' }
   ];
 
   /* ---------------- Zustand ---------------- */
 
   const spiel = {
-    lager: [],          // verfügbare Schriften
-    grad: 'lehrling',
-    probeNr: 0,
+    lager: [],
+    modus: 'klassisch',        // 'klassisch' | 'training'
+    stufe: 'leicht',           // Schlüssel aus SCHWIERIGKEIT
+    training: { gattung: 'alle', bekanntheit: 2, optionen: 4 },
+    rundeNr: 0,
+    richtige: 0,
     punkte: 0,
     protokoll: [],
     runde: null,
     laeuft: false,
-    warteAufWeiter: false
+    warteAufWeiter: false,
+    uhr: null,
+    restzeit: 0
   };
 
-  /* ---------------- Kleine Helfer ---------------- */
+  /* ---------------- Helfer ---------------- */
 
   const $ = id => document.getElementById(id);
   const waehle = arr => arr[Math.floor(Math.random() * arr.length)];
+  const zahl = n => n.toLocaleString('de-DE');
 
   function mische(arr) {
     const a = arr.slice();
@@ -106,34 +126,46 @@
 
   function zeigeSchirm(id) {
     document.querySelectorAll('.schirm').forEach(s => s.classList.remove('schirm--aktiv'));
-    $(id).classList.add('schirm--aktiv');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('schirm-' + id).classList.add('schirm--aktiv');
+    $('menue-knopf').hidden = (id === 'menue' || id === 'laden');
+    window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
-  /** Zahl im Zählwerk hochlaufen lassen. */
   function zaehleHoch(el, von, bis, dauer = 700) {
+    if (Einstellungen.hole('wenigerBewegung')) { el.textContent = zahl(bis); return; }
     const start = performance.now();
-    function schritt(jetzt) {
+    (function schritt(jetzt) {
       const p = Math.min(1, (jetzt - start) / dauer);
-      const weich = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(von + (bis - von) * weich).toLocaleString('de-DE');
+      el.textContent = zahl(Math.round(von + (bis - von) * (1 - Math.pow(1 - p, 3))));
       if (p < 1) requestAnimationFrame(schritt);
-    }
-    requestAnimationFrame(schritt);
+    })(start);
   }
 
-  /* ---------------- Aufbau: Lager öffnen ---------------- */
+  /* ---------------- Rückfrage-Fenster ---------------- */
+
+  let rueckfrageAntwort = null;
+
+  function frage(titel, text, jaText = 'Ja') {
+    $('rueckfrage-titel').textContent = titel;
+    $('rueckfrage-text').textContent = text;
+    $('rueckfrage-ja').textContent = jaText;
+    $('rueckfrage').hidden = false;
+    $('rueckfrage-ja').focus();
+    return new Promise(res => { rueckfrageAntwort = res; });
+  }
+
+  function schliesseRueckfrage(antwort) {
+    $('rueckfrage').hidden = true;
+    if (rueckfrageAntwort) { rueckfrageAntwort(antwort); rueckfrageAntwort = null; }
+  }
+
+  /* ---------------- Laden ---------------- */
 
   async function hochfahren() {
     const balken = $('lade-balken');
-    const texte = [
-      'Typenlager wird geöffnet …',
-      'Bleisatz wird abgeklopft …',
-      'Farbband wird eingefädelt …',
-      'Setzkasten wird sortiert …'
-    ];
+    const texte = ['Einen Moment …', 'Schriften werden geprüft …', 'Gleich geht es los …'];
     let t = 0;
-    const ticker = setInterval(() => { $('lade-text').textContent = texte[++t % texte.length]; }, 900);
+    const ticker = setInterval(() => { $('lade-text').textContent = texte[++t % texte.length]; }, 1100);
 
     const { stock, missing, total } = await FontDepot.open(p => {
       balken.style.width = Math.round(p * 100) + '%';
@@ -144,97 +176,211 @@
 
     const eigene = stock.filter(f => f.src === 'sys').length;
     $('lager-info').textContent =
-      `${stock.length} von ${total} Schriften einsatzbereit — davon ${eigene} aus dem Bestand deines Geräts. ` +
-      (missing.length
-        ? `${missing.length} Systemschriften gibt es hier nicht; die bleiben im Regal.`
-        : 'Vollständiges Lager, alle Achtung.');
-    $('lager-fuss').textContent = `${stock.length} Schriften im Setzkasten`;
+      `${stock.length} von ${total} Schriften stehen zur Verfügung — ` +
+      `${eigene === 1 ? 'eine davon ist' : eigene + ' davon sind'} auf diesem Gerät installiert, ` +
+      `der Rest wird mitgeliefert.` +
+      (missing.length ? ` ${missing.length} Systemschriften gibt es hier nicht.` : '');
+    $('lager-fuss').textContent = `${stock.length} Schriften verfügbar`;
 
     if (stock.length < 8) {
-      $('lade-text').textContent = 'Das Lager ist zu leer für einen Auftrag.';
-      $('start-knopf').disabled = true;
+      $('lade-text').textContent = 'Zu wenige Schriften gefunden.';
       $('lager-info').textContent =
-        'Es konnten zu wenige Schriften geladen werden. Liegt der Ordner "fonts" neben der Seite ' +
+        'Es konnten zu wenige Schriften geladen werden. Liegt der Ordner „fonts“ neben der Seite ' +
         'und ist css/schriften.css eingebunden?';
-      zeigeSchirm('schirm-start');
+      $('karte-spiel').disabled = true;
+      $('karte-training').disabled = true;
+      zeigeSchirm('menue');
       return;
     }
 
-    baueStufenschau();
-    baueGradWahl();
-    zeigeBestwert();
-    setTimeout(() => zeigeSchirm('schirm-start'), 350);
+    baueStufenwahl();
+    baueAnleitung();
+    baueTrainingsfelder();
+    baueKatalog();
+    zeigeBestenliste();
+    setTimeout(() => zeigeSchirm('menue'), 300);
   }
 
-  function baueStufenschau() {
-    $('stufenschau-liste').innerHTML = STUFEN.map((s, i) => `
-      <li class="stufenschau__eintrag">
-        <span class="stufenschau__nr">${i + 1}</span>
-        <span class="stufenschau__name">${s.name}</span>
-        <span class="stufenschau__wert">${s.wert}</span>
-      </li>`).join('');
+  /* ---------------- Bestwerte ---------------- */
+
+  const bestSchluessel = stufe => `ftf.best.${stufe}`;
+  const holeBest = stufe => parseInt(localStorage.getItem(bestSchluessel(stufe)) || '0', 10);
+
+  function zeigeBestenliste() {
+    $('bestenliste').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => {
+      const b = holeBest(key);
+      return `<li class="bestenliste__zeile">
+        <span class="bestenliste__name">${s.name}</span>
+        <span class="bestenliste__wert">${b ? zahl(b) + ' Punkte' : '—'}</span>
+      </li>`;
+    }).join('');
   }
 
-  function baueGradWahl() {
-    const wrap = $('grad-wahl');
-    wrap.innerHTML = Object.entries(GRADE).map(([key, g]) => `
-      <button type="button" class="gradknopf${key === spiel.grad ? ' gradknopf--aktiv' : ''}"
-              data-grad="${key}" role="radio" aria-checked="${key === spiel.grad}">
-        <span class="gradknopf__name">${g.name}</span>
-        <span class="gradknopf__detail">${g.tasten} Tasten · ×${g.faktor.toFixed(1)}</span>
+  /* ---------------- Schwierigkeitswahl ---------------- */
+
+  function baueStufenwahl() {
+    $('stufenwahl').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => `
+      <button type="button" class="stufenkarte${key === spiel.stufe ? ' stufenkarte--aktiv' : ''}" data-stufe="${key}">
+        <span class="stufenkarte__name">${s.name}</span>
+        <span class="stufenkarte__text">${s.text}</span>
+        <span class="stufenkarte__daten">
+          <span>${s.optionen} Antworten</span>
+          <span>${s.zeit ? s.zeit + ' s pro Runde' : 'ohne Zeitlimit'}</span>
+          <span>Punkte ×${s.faktor.toFixed(1).replace('.', ',')}</span>
+        </span>
       </button>`).join('');
 
-    wrap.querySelectorAll('.gradknopf').forEach(b => {
-      b.addEventListener('click', () => {
-        spiel.grad = b.dataset.grad;
-        wrap.querySelectorAll('.gradknopf').forEach(x => {
-          const aktiv = x === b;
-          x.classList.toggle('gradknopf--aktiv', aktiv);
-          x.setAttribute('aria-checked', String(aktiv));
-        });
-        $('grad-hinweis').textContent = GRADE[spiel.grad].info;
-        zeigeBestwert();
-        Werkstattgeraeusche.taste();
+    $('stufenwahl').querySelectorAll('.stufenkarte').forEach(k => {
+      k.addEventListener('click', () => {
+        spiel.stufe = k.dataset.stufe;
+        $('stufenwahl').querySelectorAll('.stufenkarte')
+          .forEach(x => x.classList.toggle('stufenkarte--aktiv', x === k));
+        zeigeStufenBestwert();
+        Sfx.taste();
       });
     });
-    $('grad-hinweis').textContent = GRADE[spiel.grad].info;
+    zeigeStufenBestwert();
   }
 
-  /* ---------------- Bestwert-Buchhaltung ---------------- */
-
-  const bestwertSchluessel = grad => `ftf.best.${grad}`;
-
-  function holeBestwert(grad) {
-    return parseInt(localStorage.getItem(bestwertSchluessel(grad)) || '0', 10);
+  function zeigeStufenBestwert() {
+    const b = holeBest(spiel.stufe);
+    const moeglich = Math.round(RUNDEN_JE_SPIEL * STUFEN[0].wert * SCHWIERIGKEIT[spiel.stufe].faktor);
+    $('stufenwahl-bestwert').textContent =
+      `Höchstens erreichbar: ${zahl(moeglich)} Punkte. ` +
+      (b ? `Dein Bestwert: ${zahl(b)}.` : 'Noch kein Bestwert.');
   }
 
-  function zeigeBestwert() {
-    const b = holeBestwert(spiel.grad);
-    $('bestwert').textContent = b
-      ? `Hausrekord als ${GRADE[spiel.grad].name}: ${b.toLocaleString('de-DE')} Punkte`
-      : 'Noch kein Eintrag im Werkstattbuch.';
+  /* ---------------- Anleitung ---------------- */
+
+  function baueAnleitung() {
+    $('anleitung-stufen').innerHTML = STUFEN.map((s, i) => `
+      <li class="stufenliste__zeile">
+        <span class="stufenliste__nr">${i + 1}</span>
+        <span class="stufenliste__name">${s.name}</span>
+        <span class="stufenliste__wert">${s.wert} Punkte</span>
+      </li>`).join('');
+
+    $('anleitung-tipps').innerHTML = TIPPS.map(t =>
+      `<li><strong>${t.name}</strong> — ${t.kosten} Punkte. ${tippBeispiel(t.id)}</li>`).join('');
   }
 
-  /* ---------------- Eine Runde ---------------- */
+  function tippBeispiel(id) {
+    return {
+      gattung:   'Verrät, ob die Schrift Serifen hat, gleich breit läuft und so weiter.',
+      herkunft:  'Nennt die Person und das Jahr, aus dem die Schrift stammt.',
+      buchstabe: 'Nennt den ersten Buchstaben des Schriftnamens.'
+    }[id];
+  }
 
-  function starteRunde() {
-    spiel.probeNr = 0;
+  /* ---------------- Trainingslager ---------------- */
+
+  function gattungsListe() {
+    const vorhanden = [...new Set(spiel.lager.map(f => f.cat))];
+    return ['alle', ...Object.keys(CATEGORY_LABELS).filter(c => vorhanden.includes(c))];
+  }
+
+  function baueTrainingsfelder() {
+    const optionen = gattungsListe().map(c =>
+      `<option value="${c}">${c === 'alle' ? 'alle Gattungen' : CATEGORY_LABELS[c]}</option>`).join('');
+    $('training-gattung').innerHTML = optionen;
+    $('katalog-gattung').innerHTML = optionen;
+    aktualisiereTrainingsanzahl();
+  }
+
+  function trainingsAuswahl() {
+    const gattung = $('training-gattung').value;
+    const bekanntheit = parseInt($('training-bekanntheit').value, 10);
+    return spiel.lager.filter(f =>
+      (gattung === 'alle' || f.cat === gattung) && bekanntheitVon(f.n) <= bekanntheit);
+  }
+
+  function aktualisiereTrainingsanzahl() {
+    const n = trainingsAuswahl().length;
+    const noetig = parseInt($('training-optionen').value, 10);
+    const genug = n >= Math.max(4, noetig);
+    $('training-anzahl').textContent = genug
+      ? `${n} Schriften passen zu dieser Auswahl.`
+      : `Nur ${n} Schriften passen dazu — das reicht nicht für ${noetig} Antworten. Bitte weiter fassen.`;
+    $('training-anzahl').classList.toggle('hinweis--warnung', !genug);
+    $('training-start').disabled = !genug;
+  }
+
+  function baueKatalog() {
+    const suche = ($('katalog-suche').value || '').trim().toLowerCase();
+    const gattung = $('katalog-gattung').value || 'alle';
+    const liste = spiel.lager
+      .filter(f => (gattung === 'alle' || f.cat === gattung) && f.n.toLowerCase().includes(suche))
+      .sort((a, b) => a.n.localeCompare(b.n, 'de'));
+
+    $('katalog').innerHTML = liste.length ? liste.map((f, i) => `
+      <li class="katalog__zeile">
+        <button class="katalog__kopf" type="button" data-i="${i}" aria-expanded="false">
+          <span class="katalog__probe" style="font-family:'${f.n}', serif">Hamburgefonstiv</span>
+          <span class="katalog__namen">
+            <span class="katalog__name">${f.n}</span>
+            <span class="katalog__gattung">${CATEGORY_LABELS[f.cat]}</span>
+          </span>
+        </button>
+        <div class="katalog__detail" hidden>
+          <p class="katalog__meta">${f.m}</p>
+          <p class="katalog__wissen">${f.t}</p>
+          <p class="katalog__zeile-probe" style="font-family:'${f.n}', serif">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>abcdefghijklmnopqrstuvwxyz<br>0123456789 . , ; : ! ?
+          </p>
+        </div>
+      </li>`).join('')
+      : '<li class="katalog__leer">Keine Schrift passt zu dieser Suche.</li>';
+
+    $('katalog').querySelectorAll('.katalog__kopf').forEach(k => {
+      k.addEventListener('click', () => {
+        const detail = k.nextElementSibling;
+        const offen = !detail.hidden;
+        detail.hidden = offen;
+        k.setAttribute('aria-expanded', String(!offen));
+        Sfx.taste();
+      });
+    });
+  }
+
+  /* ---------------- Spielstart ---------------- */
+
+  function auswahlFuerSpiel() {
+    const s = SCHWIERIGKEIT[spiel.stufe];
+    let pool = spiel.lager.filter(f => bekanntheitVon(f.n) <= s.bekanntheit);
+    /* Zu wenige Schriften auf diesem Gerät? Dann den Kreis weiter ziehen,
+       statt das Spiel zu verweigern. */
+    if (pool.length < s.optionen + 3) pool = spiel.lager;
+    return pool;
+  }
+
+  function starteSpiel(modus) {
+    spiel.modus = modus;
+    spiel.rundeNr = 0;
+    spiel.richtige = 0;
     spiel.punkte = 0;
     spiel.protokoll = [];
     spiel.laeuft = true;
-    $('punkte-zaehler').textContent = '0';
-    zeigeSchirm('schirm-spiel');
-    Werkstattgeraeusche.papier();
-    naechsteProbe();
+
+    $('hud').classList.toggle('hud--training', modus === 'training');
+    $('loesung-knopf').hidden = modus !== 'training';
+    $('training-ende-knopf').hidden = modus !== 'training';
+    $('hud-punkte').textContent = modus === 'training' ? '0 / 0' : '0';
+    $('hud-schild-1').textContent = modus === 'training' ? 'Aufgabe' : 'Runde';
+    $('hud-schild-2').textContent = modus === 'training' ? 'Richtig' : 'Punkte';
+
+    zeigeSchirm('spiel');
+    Sfx.papier();
+    naechsteRunde();
   }
 
-  function waehleGegner(ziel, anzahl) {
-    const streng = GRADE[spiel.grad].streng;
-    const gleicheGattung = mische(spiel.lager.filter(f => f !== ziel && f.cat === ziel.cat));
-    const rest = mische(spiel.lager.filter(f => f !== ziel && f.cat !== ziel.cat));
+  function gegenspieler(ziel, anzahl, pool, gleicheGattung) {
+    const gleich = mische(pool.filter(f => f !== ziel && f.cat === ziel.cat));
+    const andere = mische(pool.filter(f => f !== ziel && f.cat !== ziel.cat));
+    const quelle = gleicheGattung
+      ? gleich.concat(andere)
+      : gleich.slice(0, Math.ceil(anzahl / 2)).concat(andere);
 
     const gewaehlt = [];
-    const quelle = streng ? gleicheGattung.concat(rest) : gleicheGattung.slice(0, Math.ceil(anzahl / 2)).concat(rest);
     for (const f of quelle) {
       if (gewaehlt.length >= anzahl - 1) break;
       if (!gewaehlt.includes(f)) gewaehlt.push(f);
@@ -242,59 +388,127 @@
     return mische(gewaehlt.concat([ziel]));
   }
 
-  function naechsteProbe() {
-    spiel.probeNr++;
+  function naechsteRunde() {
+    spiel.rundeNr++;
 
-    /* Schriften, die in dieser Partie schon dran waren, meiden. */
-    const schonGehabt = spiel.protokoll.map(p => p.schrift);
-    const frisch = spiel.lager.filter(f => !schonGehabt.includes(f));
-    const ziel = waehle(frisch.length >= 1 ? frisch : spiel.lager);
+    const training = spiel.modus === 'training';
+    const pool = training ? trainingsAuswahl() : auswahlFuerSpiel();
+    const anzahl = Math.min(
+      training ? parseInt($('training-optionen').value, 10) : SCHWIERIGKEIT[spiel.stufe].optionen,
+      pool.length);
+    const gleicheGattung = training
+      ? $('training-gattung').value !== 'alle'
+      : SCHWIERIGKEIT[spiel.stufe].gleicheGattung;
 
-    const tastenzahl = Math.min(GRADE[spiel.grad].tasten, spiel.lager.length);
+    const schonGehabt = spiel.protokoll.slice(-8).map(p => p.schrift);
+    const frisch = pool.filter(f => !schonGehabt.includes(f));
+    const ziel = waehle(frisch.length ? frisch : pool);
 
     spiel.runde = {
       schrift: ziel,
-      optionen: waehleGegner(ziel, tastenzahl),
+      optionen: gegenspieler(ziel, anzahl, pool, gleicheGattung),
       stufe: 0,
       fehler: [],
+      tippkosten: 0,
+      genutzteTipps: [],
       proben: STUFEN.map(s => s.probe()),
       beendet: false
     };
 
-    $('auftrag-zaehler').textContent = `${spiel.probeNr} / ${PROBEN_JE_RUNDE}`;
-    $('blatt-kopf-links').textContent = `Probe Nr. ${spiel.probeNr}`;
+    $('hud-runde').textContent = training
+      ? String(spiel.rundeNr)
+      : `${spiel.rundeNr} / ${RUNDEN_JE_SPIEL}`;
+    $('blatt-kopf-links').textContent = training ? `Aufgabe ${spiel.rundeNr}` : `Runde ${spiel.rundeNr}`;
     $('aufloesung').hidden = true;
-    $('blatt').classList.remove('blatt--eingespannt');
-    void $('blatt').offsetWidth;                    // Neustart der Einzieh-Animation
-    $('blatt').classList.add('blatt--eingespannt');
+    $('tippausgabe').hidden = true;
+    $('tippausgabe').innerHTML = '';
+    $('aufdecken-knopf').disabled = false;
+    $('loesung-knopf').disabled = false;
+
+    if (!Einstellungen.hole('wenigerBewegung')) {
+      $('blatt').classList.remove('blatt--eingespannt');
+      void $('blatt').offsetWidth;
+      $('blatt').classList.add('blatt--eingespannt');
+    }
 
     baueTastatur();
     baueStufenleiste();
+    baueTippreihe();
     Walze.leere();
     zeigeStufe(true);
+    starteUhr();
   }
 
-  function aktuellerWert() {
+  /* ---------------- Zeitlimit ---------------- */
+
+  function starteUhr() {
+    stoppeUhr();
+    const sekunden = spiel.modus === 'training' ? 0 : SCHWIERIGKEIT[spiel.stufe].zeit;
+    $('zeitleiste').hidden = !sekunden;
+    if (!sekunden) return;
+
+    spiel.restzeit = sekunden;
+    let letzterTick = sekunden;
+    zeichneUhr(sekunden, sekunden);
+
+    spiel.uhr = setInterval(() => {
+      spiel.restzeit -= 0.1;
+      zeichneUhr(spiel.restzeit, sekunden);
+
+      const ganze = Math.ceil(spiel.restzeit);
+      if (ganze !== letzterTick && ganze <= 5 && ganze > 0) { Sfx.ticken(); letzterTick = ganze; }
+
+      if (spiel.restzeit <= 0) {
+        stoppeUhr();
+        Sfx.zeitAus();
+        beendeRunde(false, null, true);
+      }
+    }, 100);
+  }
+
+  function zeichneUhr(rest, gesamt) {
+    const anteil = Math.max(0, rest / gesamt);
+    $('zeitbalken').style.width = (anteil * 100) + '%';
+    $('zeitbalken').classList.toggle('zeitleiste__balken--knapp', anteil < 0.25);
+    $('zeitzahl').textContent = Math.max(0, Math.ceil(rest));
+  }
+
+  function stoppeUhr() {
+    clearInterval(spiel.uhr);
+    spiel.uhr = null;
+  }
+
+  /* ---------------- Anzeige der Stufe ---------------- */
+
+  function rundenwert(stufeNr = spiel.runde.stufe) {
     const r = spiel.runde;
-    return Math.max(TROSTPUNKTE, STUFEN[r.stufe].wert - r.fehler.length * FEHLERKOSTEN);
+    return Math.max(MINDESTPUNKTE,
+      STUFEN[stufeNr].wert - r.fehler.length * FEHLERKOSTEN - r.tippkosten);
+  }
+
+  function rundenpunkte() {
+    return Math.round(rundenwert() * SCHWIERIGKEIT[spiel.stufe].faktor);
   }
 
   function zeigeStufe(mitAnimation) {
     const r = spiel.runde;
     const stufe = STUFEN[r.stufe];
+    const training = spiel.modus === 'training';
 
-    $('blatt-kopf-rechts').textContent = `Stufe ${r.stufe + 1} — ${stufe.name}`;
-    $('probenwert').textContent = Math.round(aktuellerWert() * GRADE[spiel.grad].faktor);
+    $('blatt-kopf-rechts').textContent = `Stufe ${r.stufe + 1} von ${STUFEN.length} — ${stufe.name}`;
+    if (!training) $('hud-wert').textContent = zahl(rundenpunkte());
     aktualisiereStufenleiste();
 
     const letzte = r.stufe === STUFEN.length - 1;
-    $('hebel-knopf').disabled = letzte;
-    $('hebel-info').textContent = letzte
-      ? 'mehr gibt das Farbband nicht her'
-      : `nächste Stufe · noch ${Math.round(Math.max(TROSTPUNKTE, STUFEN[r.stufe + 1].wert - r.fehler.length * FEHLERKOSTEN) * GRADE[spiel.grad].faktor)} Punkte`;
+    $('aufdecken-knopf').disabled = letzte || r.beendet;
+    $('aufdecken-info').textContent = letzte
+      ? 'alles aufgedeckt'
+      : training
+        ? `weiter zu „${STUFEN[r.stufe + 1].name}“`
+        : `${STUFEN[r.stufe + 1].name} · dann noch ${zahl(Math.round(rundenwert(r.stufe + 1) * SCHWIERIGKEIT[spiel.stufe].faktor))} Punkte`;
 
     const auftrag = { font: r.schrift.n, text: r.proben[r.stufe], grad: stufe.grad };
-    if (mitAnimation) {
+    if (mitAnimation && !Einstellungen.hole('wenigerBewegung')) {
       Walze.tippe({ ...auftrag, tempo: r.proben[r.stufe].length > 30 ? 22 : 55 });
     } else {
       Walze.setze(auftrag);
@@ -303,17 +517,16 @@
 
   function baueStufenleiste() {
     $('stufenleiste').innerHTML = STUFEN.map((s, i) => `
-      <li class="kerbe" data-nr="${i}" title="${s.name} — ${s.wert} Punkte">
+      <li class="kerbe" title="Stufe ${i + 1}: ${s.name} — ${s.wert} Punkte">
         <span class="kerbe__marke"></span>
         <span class="kerbe__nr">${i + 1}</span>
       </li>`).join('');
   }
 
   function aktualisiereStufenleiste() {
-    const r = spiel.runde;
     $('stufenleiste').querySelectorAll('.kerbe').forEach((el, i) => {
-      el.classList.toggle('kerbe--auf', i < r.stufe);
-      el.classList.toggle('kerbe--jetzt', i === r.stufe);
+      el.classList.toggle('kerbe--auf', i < spiel.runde.stufe);
+      el.classList.toggle('kerbe--jetzt', i === spiel.runde.stufe);
     });
   }
 
@@ -327,24 +540,63 @@
         </span>
       </button>`).join('');
     t.querySelectorAll('.taste').forEach(b => {
-      b.addEventListener('click', () => tippeAuf(parseInt(b.dataset.i, 10)));
+      b.addEventListener('click', () => antworte(parseInt(b.dataset.i, 10)));
     });
     t.dataset.spalten = spiel.runde.optionen.length > 6 ? '4' : (spiel.runde.optionen.length > 4 ? '3' : '2');
   }
 
+  /* ---------------- Tipps ---------------- */
+
+  function baueTippreihe() {
+    const training = spiel.modus === 'training';
+    $('tippreihe').innerHTML = TIPPS.map(t => `
+      <button type="button" class="tippknopf" data-tipp="${t.id}">
+        <span class="tippknopf__name">${t.name}</span>
+        <span class="tippknopf__preis">${training ? 'kostenlos' : '−' + t.kosten}</span>
+      </button>`).join('');
+
+    $('tippreihe').querySelectorAll('.tippknopf').forEach(k => {
+      k.addEventListener('click', () => kaufeTipp(k.dataset.tipp));
+    });
+  }
+
+  function kaufeTipp(id) {
+    const r = spiel.runde;
+    if (!r || r.beendet || r.genutzteTipps.includes(id)) return;
+    const tipp = TIPPS.find(t => t.id === id);
+
+    r.genutzteTipps.push(id);
+    if (spiel.modus !== 'training') r.tippkosten += tipp.kosten;
+    Sfx.tipp();
+
+    const knopf = $('tippreihe').querySelector(`[data-tipp="${id}"]`);
+    knopf.disabled = true;
+    knopf.classList.add('tippknopf--genutzt');
+
+    const zeile = document.createElement('span');
+    zeile.className = 'tippausgabe__zeile';
+    zeile.textContent = tipp.text(r.schrift);
+    $('tippausgabe').appendChild(zeile);
+    $('tippausgabe').hidden = false;
+
+    zeigeStufe(false);
+  }
+
   /* ---------------- Spielzüge ---------------- */
 
-  function hebelZiehen() {
+  function aufdecken() {
     const r = spiel.runde;
     if (!r || r.beendet || r.stufe >= STUFEN.length - 1) return;
     r.stufe++;
-    Werkstattgeraeusche.hebel();
-    $('blatt').classList.add('blatt--ruck');
-    setTimeout(() => $('blatt').classList.remove('blatt--ruck'), 320);
+    Sfx.hebel();
+    if (!Einstellungen.hole('wenigerBewegung')) {
+      $('blatt').classList.add('blatt--ruck');
+      setTimeout(() => $('blatt').classList.remove('blatt--ruck'), 320);
+    }
     zeigeStufe(true);
   }
 
-  function tippeAuf(index) {
+  function antworte(index) {
     const r = spiel.runde;
     if (!r || r.beendet) return;
     const gewaehlt = r.optionen[index];
@@ -353,23 +605,23 @@
     const taste = $('tastatur').querySelector(`.taste[data-i="${index}"]`);
 
     if (gewaehlt === r.schrift) {
-      Werkstattgeraeusche.glocke();
+      Sfx.richtig();
       taste.classList.add('taste--treffer');
-      beendeProbe(true, gewaehlt);
+      beendeRunde(true, gewaehlt);
       return;
     }
 
-    /* Fehlgriff: Taste verklemmt sich, die Maschine rückt eine Stufe vor. */
     r.fehler.push(gewaehlt);
-    Werkstattgeraeusche.fehler();
+    Sfx.falsch();
     taste.classList.add('taste--verklemmt');
     taste.disabled = true;
-    document.body.classList.add('erschuettert');
-    setTimeout(() => document.body.classList.remove('erschuettert'), 400);
+    if (!Einstellungen.hole('wenigerBewegung')) {
+      document.body.classList.add('erschuettert');
+      setTimeout(() => document.body.classList.remove('erschuettert'), 400);
+    }
 
-    const nochOffen = r.optionen.length - r.fehler.length;
-    if (nochOffen <= 1) {
-      beendeProbe(false, gewaehlt);
+    if (r.optionen.length - r.fehler.length <= 1) {
+      beendeRunde(false, gewaehlt);
       return;
     }
 
@@ -381,43 +633,61 @@
     }
   }
 
-  function beendeProbe(richtig, gewaehlt) {
-    const r = spiel.runde;
-    r.beendet = true;
-    $('hebel-knopf').disabled = true;
-    $('tastatur').querySelectorAll('.taste').forEach(b => { b.disabled = true; });
-
-    const punkte = richtig ? Math.round(aktuellerWert() * GRADE[spiel.grad].faktor) : 0;
-    const vorher = spiel.punkte;
-    spiel.punkte += punkte;
-
-    spiel.protokoll.push({
-      schrift: r.schrift,
-      richtig,
-      stufe: r.stufe,
-      fehler: r.fehler.length,
-      punkte,
-      gewaehlt: richtig ? null : gewaehlt
-    });
-
-    zaehleHoch($('punkte-zaehler'), vorher, spiel.punkte);
-    setTimeout(() => zeigeAufloesung(richtig, gewaehlt, punkte), 620);
+  function loesungZeigen() {
+    if (!spiel.runde || spiel.runde.beendet) return;
+    beendeRunde(false, null, false, true);
   }
 
-  function zeigeAufloesung(richtig, gewaehlt, punkte) {
+  function beendeRunde(richtig, gewaehlt, zeitAbgelaufen = false, aufgegeben = false) {
     const r = spiel.runde;
-    const box = $('aufloesung');
+    if (!r || r.beendet) return;
+    r.beendet = true;
+    stoppeUhr();
+
+    $('aufdecken-knopf').disabled = true;
+    $('loesung-knopf').disabled = true;
+    $('tastatur').querySelectorAll('.taste').forEach(b => { b.disabled = true; });
+    $('tippreihe').querySelectorAll('.tippknopf').forEach(b => { b.disabled = true; });
+
+    const training = spiel.modus === 'training';
+    const punkte = (richtig && !training) ? rundenpunkte() : 0;
+    const vorher = spiel.punkte;
+    spiel.punkte += punkte;
+    if (richtig) spiel.richtige++;
+
+    spiel.protokoll.push({
+      schrift: r.schrift, richtig, stufe: r.stufe,
+      fehler: r.fehler.length, tipps: r.genutzteTipps.length,
+      punkte, gewaehlt: richtig ? null : gewaehlt, zeitAbgelaufen, aufgegeben
+    });
+
+    if (training) {
+      $('hud-punkte').textContent = `${spiel.richtige} / ${spiel.rundeNr}`;
+    } else {
+      zaehleHoch($('hud-punkte'), vorher, spiel.punkte);
+    }
+
+    setTimeout(() => zeigeAufloesung(richtig, gewaehlt, punkte, zeitAbgelaufen, aufgegeben), 560);
+  }
+
+  /* ---------------- Auflösung ---------------- */
+
+  function zeigeAufloesung(richtig, gewaehlt, punkte, zeitAbgelaufen, aufgegeben) {
+    const r = spiel.runde;
+    const training = spiel.modus === 'training';
 
     $('stempel').className = 'stempel ' + (richtig ? 'stempel--gut' : 'stempel--schlecht');
-    $('stempel-text').textContent = richtig ? 'gesetzt' : 'Makulatur';
+    $('stempel-text').textContent = richtig ? 'richtig' : 'falsch';
 
     $('aufloesung-vorspann').textContent = richtig
-      ? `Erkannt auf Stufe ${r.stufe + 1}`
-      : 'Die gesuchte Schrift war';
+      ? `Richtig erkannt auf Stufe ${r.stufe + 1} von ${STUFEN.length}`
+      : zeitAbgelaufen ? 'Zeit abgelaufen. Gesucht war'
+      : aufgegeben ? 'Gesucht war'
+      : 'Leider nicht. Gesucht war';
+
     $('aufloesung-name').textContent = r.schrift.n;
     $('aufloesung-name').style.fontFamily = `"${r.schrift.n}", serif`;
     $('aufloesung-meta').textContent = `${CATEGORY_LABELS[r.schrift.cat]} · ${r.schrift.m}`;
-    $('aufloesung-probe').textContent = 'Hamburgefonstiv 0123';
     $('aufloesung-probe').style.fontFamily = `"${r.schrift.n}", serif`;
     $('aufloesung-wissen').textContent = r.schrift.t;
 
@@ -431,15 +701,19 @@
       vergleich.hidden = true;
     }
 
-    const fehlerText = r.fehler.length
-      ? ` (${r.fehler.length} Fehlgriff${r.fehler.length > 1 ? 'e' : ''})`
-      : '';
-    $('aufloesung-punkte').textContent = richtig
-      ? `+ ${punkte.toLocaleString('de-DE')} Punkte${fehlerText}`
-      : 'Kein Punkt für dieses Blatt.';
+    const zusatz = [];
+    if (r.fehler.length) zusatz.push(`${r.fehler.length}× falsch geraten`);
+    if (r.genutzteTipps.length) zusatz.push(`${r.genutzteTipps.length} Tipp${r.genutzteTipps.length > 1 ? 's' : ''}`);
+    const klammer = zusatz.length ? ` (${zusatz.join(', ')})` : '';
 
-    $('weiter-text').textContent = spiel.probeNr >= PROBEN_JE_RUNDE ? 'Zeugnis ausstellen' : 'Nächstes Blatt';
-    box.hidden = false;
+    $('aufloesung-punkte').textContent = training
+      ? `${spiel.richtige} von ${spiel.rundeNr} richtig${klammer}`
+      : richtig ? `+ ${zahl(punkte)} Punkte${klammer}` : `Keine Punkte für diese Runde${klammer}`;
+
+    $('weiter-knopf').textContent = (!training && spiel.rundeNr >= RUNDEN_JE_SPIEL)
+      ? 'Ergebnis ansehen' : 'Weiter';
+
+    $('aufloesung').hidden = false;
     spiel.warteAufWeiter = true;
     $('weiter-knopf').focus({ preventScroll: true });
   }
@@ -447,135 +721,284 @@
   function weiter() {
     if (!spiel.warteAufWeiter) return;
     spiel.warteAufWeiter = false;
-    if (spiel.probeNr >= PROBEN_JE_RUNDE) {
-      stelleZeugnisAus();
+    /* Das Fenster liegt über allen Schirmen — beim Wechsel muss es
+       ausdrücklich zu, sonst blockiert es die Bedienung. */
+    $('aufloesung').hidden = true;
+    if (spiel.modus !== 'training' && spiel.rundeNr >= RUNDEN_JE_SPIEL) {
+      zeigeErgebnis();
     } else {
-      Werkstattgeraeusche.papier();
-      naechsteProbe();
+      Sfx.papier();
+      naechsteRunde();
     }
   }
 
-  /* ---------------- Zeugnis ---------------- */
+  /* ---------------- Ergebnis ---------------- */
 
   function verdienteOrden() {
     const p = spiel.protokoll;
-    const verliehen = [];
-    if (p.some(x => x.richtig && x.stufe === 0)) verliehen.push('blind');
-    if (p.some(x => x.richtig && x.stufe === 0 && x.fehler === 0)) verliehen.push('sparsam');
-    if (p.every(x => x.fehler === 0)) verliehen.push('rein');
-    if (p.every(x => x.richtig)) verliehen.push('serie');
-    if (p.some(x => x.richtig && x.stufe === STUFEN.length - 1)) verliehen.push('lupe');
-    return ORDEN.filter(o => verliehen.includes(o.id));
+    const ids = [];
+    if (p.some(x => x.richtig && x.stufe === 0)) ids.push('blind');
+    if (p.some(x => x.richtig && x.stufe === 0 && x.fehler === 0 && x.tipps === 0)) ids.push('sparsam');
+    if (p.every(x => x.fehler === 0)) ids.push('rein');
+    if (p.every(x => x.richtig)) ids.push('serie');
+    if (p.some(x => x.richtig && x.stufe === STUFEN.length - 1)) ids.push('lupe');
+    return ORDEN.filter(o => ids.includes(o.id));
   }
 
-  function stelleZeugnisAus() {
+  function zeigeErgebnis() {
     spiel.laeuft = false;
-    const maximum = PROBEN_JE_RUNDE * STUFEN[0].wert * GRADE[spiel.grad].faktor;
-    const quote = spiel.punkte / maximum;
-    const rang = RAENGE.find(r => quote >= r.ab);
+    stoppeUhr();
 
-    zeigeSchirm('schirm-ende');
-    Werkstattgeraeusche.stempel();
+    const s = SCHWIERIGKEIT[spiel.stufe];
+    const maximum = RUNDEN_JE_SPIEL * STUFEN[0].wert * s.faktor;
+    const rang = RAENGE.find(r => spiel.punkte / maximum >= r.ab);
 
+    zeigeSchirm('ende');
+    Sfx.stempel();
+
+    $('ende-modus').textContent = `Spiel · Schwierigkeit ${s.name}`;
     $('zeugnis-rang').textContent = rang.titel;
-    $('zeugnis-vermerk').textContent = rang.vermerk;
+    $('zeugnis-vermerk').textContent = rang.text;
     zaehleHoch($('zeugnis-punkte'), 0, spiel.punkte, 1100);
 
-    $('protokoll').innerHTML = spiel.protokoll.map((p, i) => `
-      <li class="protokoll__zeile${p.richtig ? '' : ' protokoll__zeile--daneben'}">
+    $('protokoll').innerHTML = spiel.protokoll.map((p, i) => {
+      const wie = p.richtig
+        ? `auf Stufe ${p.stufe + 1}`
+        : p.zeitAbgelaufen ? 'Zeit abgelaufen' : 'nicht erkannt';
+      const extra = [];
+      if (p.fehler) extra.push(`${p.fehler}× falsch`);
+      if (p.tipps) extra.push(`${p.tipps} Tipp${p.tipps > 1 ? 's' : ''}`);
+      return `<li class="protokoll__zeile${p.richtig ? '' : ' protokoll__zeile--daneben'}">
         <span class="protokoll__nr">${i + 1}</span>
         <span class="protokoll__schrift" style="font-family:'${p.schrift.n}', serif">${p.schrift.n}</span>
-        <span class="protokoll__stufe">${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'nicht erkannt'}${p.fehler ? ` · ${p.fehler}× daneben` : ''}</span>
-        <span class="protokoll__punkte">${p.punkte ? '+' + p.punkte.toLocaleString('de-DE') : '—'}</span>
-      </li>`).join('');
+        <span class="protokoll__stufe">${wie}${extra.length ? ' · ' + extra.join(' · ') : ''}</span>
+        <span class="protokoll__punkte">${p.punkte ? '+' + zahl(p.punkte) : '—'}</span>
+      </li>`;
+    }).join('');
 
     const orden = verdienteOrden();
+    $('orden-titel').hidden = false;
     $('orden').innerHTML = orden.length
-      ? orden.map(o => `<span class="orden__stueck" title="${o.text}"><b>${o.name}</b><small>${o.text}</small></span>`).join('')
-      : '<span class="orden__leer">Diesmal keine Auszeichnung — das Farbband hält noch eine Runde.</span>';
+      ? orden.map(o => `<span class="orden__stueck"><b>${o.name}</b><small>${o.text}</small></span>`).join('')
+      : '<span class="orden__leer">Diesmal keine — beim nächsten Versuch vielleicht.</span>';
 
-    const alt = holeBestwert(spiel.grad);
+    const alt = holeBest(spiel.stufe);
     if (spiel.punkte > alt) {
-      localStorage.setItem(bestwertSchluessel(spiel.grad), String(spiel.punkte));
-      $('bestwert-ende').textContent = `Neuer Hausrekord als ${GRADE[spiel.grad].name}! Bisher: ${alt.toLocaleString('de-DE')} Punkte.`;
+      localStorage.setItem(bestSchluessel(spiel.stufe), String(spiel.punkte));
+      $('bestwert-ende').textContent = alt
+        ? `Neuer Bestwert! Vorher: ${zahl(alt)} Punkte.`
+        : 'Dein erster Eintrag in der Bestenliste.';
     } else {
-      $('bestwert-ende').textContent = `Hausrekord als ${GRADE[spiel.grad].name}: ${alt.toLocaleString('de-DE')} Punkte.`;
+      $('bestwert-ende').textContent = `Dein Bestwert auf ${s.name}: ${zahl(alt)} Punkte.`;
     }
-    zeigeBestwert();
+    zeigeBestenliste();
+    zeigeStufenBestwert();
   }
 
-  function ergebnisAbtippen() {
-    const zeilen = spiel.protokoll.map((p, i) =>
-      `${i + 1}. ${p.schrift.n} — ${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'daneben'} (${p.punkte} P.)`
-    );
+  function ergebnisKopieren() {
     const text = [
-      `findthefont · ${GRADE[spiel.grad].name}`,
+      `findthefont · Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
       `${spiel.punkte} Punkte — ${$('zeugnis-rang').textContent}`,
-      ...zeilen
+      ...spiel.protokoll.map((p, i) =>
+        `${i + 1}. ${p.schrift.n} — ${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'nicht erkannt'} (${p.punkte} P.)`)
     ].join('\n');
 
     const fertig = () => {
-      const k = $('teilen-knopf');
-      k.textContent = 'Abgetippt!';
-      Werkstattgeraeusche.stempel();
-      setTimeout(() => { k.textContent = 'Ergebnis abtippen'; }, 1800);
+      const k = $('kopieren-knopf');
+      k.textContent = 'Kopiert!';
+      Sfx.stempel();
+      setTimeout(() => { k.textContent = 'Ergebnis kopieren'; }, 1800);
     };
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(fertig).catch(fertig);
-    } else {
-      fertig();
-    }
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(fertig).catch(fertig);
+    else fertig();
   }
 
-  /* ---------------- Bedienung ---------------- */
+  /* ---------------- Verlassen ---------------- */
+
+  async function zurueckZumMenue() {
+    if (spiel.laeuft && spiel.modus === 'klassisch' && !spiel.warteAufWeiter) {
+      const ja = await frage('Spiel abbrechen?',
+        'Das laufende Spiel wird verworfen und die Punkte gehen verloren.', 'Abbrechen und zurück');
+      if (!ja) return;
+    }
+    spiel.laeuft = false;
+    stoppeUhr();
+    $('aufloesung').hidden = true;
+    spiel.warteAufWeiter = false;
+    zeigeBestenliste();
+    zeigeSchirm('menue');
+  }
+
+  /* ---------------- Einstellungsfenster ---------------- */
+
+  function baueEinstellungen() {
+    const e = Einstellungen.alle();
+
+    const zeige = () => {
+      const a = Einstellungen.alle();
+      $('regler-musik').value = a.musikLaut;
+      $('wert-musik').textContent = a.musikLaut + ' %';
+      $('schalter-musik').textContent = a.musikAn ? 'an' : 'aus';
+      $('schalter-musik').setAttribute('aria-pressed', String(a.musikAn));
+      $('schalter-musik').classList.toggle('schalter--aus', !a.musikAn);
+      $('regler-musik').disabled = !a.musikAn;
+
+      $('regler-sfx').value = a.sfxLaut;
+      $('wert-sfx').textContent = a.sfxLaut + ' %';
+      $('schalter-sfx').textContent = a.sfxAn ? 'an' : 'aus';
+      $('schalter-sfx').setAttribute('aria-pressed', String(a.sfxAn));
+      $('schalter-sfx').classList.toggle('schalter--aus', !a.sfxAn);
+      $('regler-sfx').disabled = !a.sfxAn;
+
+      $('haken-tippen').checked = a.tippgeraeusch;
+      $('haken-bewegung').checked = a.wenigerBewegung;
+    };
+
+    $('regler-musik').value = e.musikLaut;
+    $('regler-sfx').value = e.sfxLaut;
+
+    $('regler-musik').addEventListener('input', ev => {
+      Einstellungen.setze('musikLaut', parseInt(ev.target.value, 10));
+      $('wert-musik').textContent = ev.target.value + ' %';
+      Musik.sofortLautstaerke();
+    });
+    $('schalter-musik').addEventListener('click', () => {
+      Einstellungen.setze('musikAn', !Einstellungen.hole('musikAn'));
+      zeige();
+      Sfx.taste();
+    });
+
+    let sfxProbe = null;
+    $('regler-sfx').addEventListener('input', ev => {
+      Einstellungen.setze('sfxLaut', parseInt(ev.target.value, 10));
+      $('wert-sfx').textContent = ev.target.value + ' %';
+      clearTimeout(sfxProbe);
+      sfxProbe = setTimeout(() => Sfx.taste(), 140);   // kurze Hörprobe
+    });
+    $('schalter-sfx').addEventListener('click', () => {
+      Einstellungen.setze('sfxAn', !Einstellungen.hole('sfxAn'));
+      zeige();
+      Sfx.taste();
+    });
+
+    $('haken-tippen').addEventListener('change', ev =>
+      Einstellungen.setze('tippgeraeusch', ev.target.checked));
+    $('haken-bewegung').addEventListener('change', ev =>
+      Einstellungen.setze('wenigerBewegung', ev.target.checked));
+
+    $('bestwerte-loeschen').addEventListener('click', async () => {
+      const ja = await frage('Bestwerte löschen?',
+        'Alle gespeicherten Bestwerte werden entfernt. Das lässt sich nicht rückgängig machen.', 'Löschen');
+      if (!ja) return;
+      Object.keys(SCHWIERIGKEIT).forEach(k => localStorage.removeItem(bestSchluessel(k)));
+      zeigeBestenliste();
+      zeigeStufenBestwert();
+      $('einstellungen-fuss').textContent = 'Bestwerte gelöscht.';
+      setTimeout(() => { $('einstellungen-fuss').textContent = ''; }, 2600);
+    });
+
+    zeige();
+    return zeige;
+  }
+
+  /* ---------------- Verdrahtung ---------------- */
 
   function verdrahte() {
     Walze.mount($('probe'));
+    const zeigeEinstellungen = baueEinstellungen();
 
-    $('start-knopf').addEventListener('click', () => { Werkstattgeraeusche.taste(); starteRunde(); });
-    $('hebel-knopf').addEventListener('click', hebelZiehen);
+    /* Startseite */
+    $('karte-spiel').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('schwierigkeit'); });
+    $('karte-training').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('training'); });
+    $('karte-anleitung').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('anleitung'); });
+    $('karte-einstellungen').addEventListener('click', () => { Sfx.taste(); oeffneEinstellungen(); });
+    $('logo-knopf').addEventListener('click', zurueckZumMenue);
+    $('menue-knopf').addEventListener('click', zurueckZumMenue);
+    document.querySelectorAll('[data-ziel="menue"]').forEach(b =>
+      b.addEventListener('click', zurueckZumMenue));
+
+    /* Schwierigkeit */
+    $('losgehts-knopf').addEventListener('click', () => { Sfx.taste(); starteSpiel('klassisch'); });
+
+    /* Training */
+    document.querySelectorAll('.reiter__knopf').forEach(k => {
+      k.addEventListener('click', () => {
+        document.querySelectorAll('.reiter__knopf').forEach(x =>
+          x.classList.toggle('reiter__knopf--aktiv', x === k));
+        document.querySelectorAll('.reiter__inhalt').forEach(x =>
+          x.classList.toggle('reiter__inhalt--aktiv', x.dataset.inhalt === k.dataset.reiter));
+        Sfx.taste();
+      });
+    });
+    ['training-gattung', 'training-bekanntheit', 'training-optionen'].forEach(id =>
+      $(id).addEventListener('change', aktualisiereTrainingsanzahl));
+    $('training-start').addEventListener('click', () => { Sfx.taste(); starteSpiel('training'); });
+    $('katalog-gattung').addEventListener('change', baueKatalog);
+    $('katalog-suche').addEventListener('input', baueKatalog);
+
+    /* Spiel */
+    $('aufdecken-knopf').addEventListener('click', aufdecken);
+    $('loesung-knopf').addEventListener('click', loesungZeigen);
     $('weiter-knopf').addEventListener('click', weiter);
-    $('nochmal-knopf').addEventListener('click', () => { Werkstattgeraeusche.taste(); starteRunde(); });
-    $('teilen-knopf').addEventListener('click', ergebnisAbtippen);
+    $('training-ende-knopf').addEventListener('click', () => {
+      $('aufloesung').hidden = true;
+      spiel.warteAufWeiter = false;
+      spiel.laeuft = false;
+      zeigeSchirm('training');
+    });
 
-    const tonSchalter = $('ton-schalter');
-    const zeigeTon = an => {
-      tonSchalter.setAttribute('aria-pressed', String(an));
-      tonSchalter.classList.toggle('metallknopf--aus', !an);
-      $('ton-text').textContent = an ? 'Ton an' : 'Ton aus';
-    };
-    zeigeTon(Werkstattgeraeusche.an());
-    tonSchalter.addEventListener('click', () => zeigeTon(Werkstattgeraeusche.umschalten()));
+    /* Ergebnis */
+    $('nochmal-knopf').addEventListener('click', () => { Sfx.taste(); starteSpiel('klassisch'); });
+    $('stufe-wechseln-knopf').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('schwierigkeit'); });
+    $('kopieren-knopf').addEventListener('click', ergebnisKopieren);
 
+    /* Fenster */
+    $('einstellungen-knopf').addEventListener('click', oeffneEinstellungen);
+    $('einstellungen-schliessen').addEventListener('click', () => { $('einstellungen-fenster').hidden = true; });
+    $('einstellungen-fenster').addEventListener('click', ev => {
+      if (ev.target === $('einstellungen-fenster')) $('einstellungen-fenster').hidden = true;
+    });
+    $('rueckfrage-ja').addEventListener('click', () => schliesseRueckfrage(true));
+    $('rueckfrage-nein').addEventListener('click', () => schliesseRueckfrage(false));
+
+    function oeffneEinstellungen() {
+      zeigeEinstellungen();
+      $('einstellungen-fenster').hidden = false;
+    }
+
+    /* Tastatur */
     document.addEventListener('keydown', e => {
-      if (e.target.matches('input, textarea')) return;
+      if (e.target.matches('input, textarea, select')) return;
+
+      if (e.code === 'Escape') {
+        if (!$('rueckfrage').hidden) { schliesseRueckfrage(false); return; }
+        if (!$('einstellungen-fenster').hidden) { $('einstellungen-fenster').hidden = true; return; }
+        return;
+      }
+
+      if (!$('rueckfrage').hidden || !$('einstellungen-fenster').hidden) return;
 
       if (e.code === 'Space' || e.code === 'Enter') {
         const aktiv = document.querySelector('.schirm--aktiv');
         if (!aktiv) return;
-        if (aktiv.id === 'schirm-start' && !$('start-knopf').disabled) { e.preventDefault(); $('start-knopf').click(); }
+        if (spiel.warteAufWeiter) { e.preventDefault(); weiter(); return; }
+        if (aktiv.id === 'schirm-schwierigkeit') { e.preventDefault(); $('losgehts-knopf').click(); }
         else if (aktiv.id === 'schirm-ende') { e.preventDefault(); $('nochmal-knopf').click(); }
-        else if (aktiv.id === 'schirm-spiel') {
-          e.preventDefault();
-          if (spiel.warteAufWeiter) weiter();
-          else if (e.code === 'Space') hebelZiehen();
-        }
+        else if (aktiv.id === 'schirm-spiel' && e.code === 'Space') { e.preventDefault(); aufdecken(); }
         return;
       }
 
       if (/^Digit[1-8]$/.test(e.code) && spiel.laeuft && !spiel.warteAufWeiter) {
         const i = parseInt(e.code.slice(5), 10) - 1;
-        if (spiel.runde && i < spiel.runde.optionen.length) {
-          e.preventDefault();
-          tippeAuf(i);
-        }
+        if (spiel.runde && i < spiel.runde.optionen.length) { e.preventDefault(); antworte(i); }
       }
     });
   }
 
-  /* ---------------- Los geht's ---------------- */
+  /* ---------------- Los ---------------- */
 
+  Einstellungen.laden();
+  Musik.beiErsterGeste();
   verdrahte();
   hochfahren();
 })();

@@ -157,6 +157,53 @@ const FONT_CATALOG = [
    sonst wäre die Antwort auf jedem Knopf abzulesen. */
 const UI_FONTS = ['Special Elite', 'Courier Prime'];
 
+/* ------------------------------------------------------------
+   Bekanntheit — steuert, welche Schriften in welcher
+   Schwierigkeit vorkommen.
+
+   1 = kennt praktisch jeder
+   2 = begegnet einem regelmäßig im Web oder in Office
+   3 = etwas für Leute, die sich mit Schriften beschäftigen
+
+   Was hier nicht steht, gilt automatisch als Stufe 3.
+   ------------------------------------------------------------ */
+const BEKANNTHEIT = {
+  1: [
+    'Arial', 'Times New Roman', 'Comic Sans MS', 'Courier New', 'Impact',
+    'Georgia', 'Verdana', 'Helvetica', 'Calibri', 'Papyrus', 'Tahoma',
+    'Trebuchet MS', 'Segoe UI', 'Brush Script MT', 'Arial Black', 'Futura',
+    'Garamond', 'Century Gothic',
+    'Roboto', 'Open Sans', 'Montserrat', 'Lato', 'Oswald', 'Poppins',
+    'Lobster', 'Pacifico', 'Bebas Neue', 'Playfair Display', 'Anton',
+    'Permanent Marker', 'Indie Flower', 'Dancing Script', 'Orbitron',
+    'Amatic SC', 'Inter', 'Merriweather', 'Roboto Mono', 'Alfa Slab One'
+  ],
+  2: [
+    'Palatino Linotype', 'Palatino', 'Book Antiqua', 'Baskerville', 'Didot',
+    'Cambria', 'Consolas', 'Monaco', 'Menlo', 'Lucida Console', 'Lucida Grande',
+    'Gill Sans', 'Optima', 'Avenir', 'Rockwell', 'Copperplate',
+    'Bookman Old Style', 'Franklin Gothic Medium', 'Arial Narrow',
+    'Segoe Script', 'Segoe Print', 'Marker Felt', 'Chalkboard SE',
+    'Bradley Hand', 'Zapfino', 'Snell Roundhand', 'Geneva', 'Bahnschrift',
+    'Ink Free',
+    'Raleway', 'Nunito', 'Quicksand', 'Josefin Sans', 'Fira Sans', 'PT Sans',
+    'PT Serif', 'Source Code Pro', 'JetBrains Mono', 'Inconsolata',
+    'Space Mono', 'IBM Plex Mono', 'Roboto Slab', 'Lora', 'EB Garamond',
+    'Libre Baskerville', 'Cormorant Garamond', 'Crimson Text', 'Abril Fatface',
+    'Cinzel', 'Great Vibes', 'Satisfy', 'Caveat', 'Shadows Into Light',
+    'Righteous', 'Fredoka', 'Archivo Black', 'Barlow', 'Rubik', 'Work Sans',
+    'Titillium Web', 'Exo 2', 'Noto Serif', 'Bitter', 'Arvo', 'Cutive Mono',
+    'Cabin', 'Karla', 'Manrope'
+  ]
+};
+
+/** Bekanntheitsstufe einer Schrift (1–3). */
+function bekanntheitVon(name) {
+  if (BEKANNTHEIT[1].includes(name)) return 1;
+  if (BEKANNTHEIT[2].includes(name)) return 2;
+  return 3;
+}
+
 /* Menschenlesbare Namen der Schriftfamilien-Gattungen */
 const CATEGORY_LABELS = {
   sans:    'Grotesk',

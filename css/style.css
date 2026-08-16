@@ -1,7 +1,7 @@
 /* ============================================================
-   findthefont — Ausstattung der Werkstatt
-   Farben: Nussbaum-Werkbank, Büttenpapier, Farbband rot/schwarz,
-   Messing für alles, was glänzen darf.
+   findthefont — Gestaltung
+   Optik: alte Schreibmaschine auf einer Holzwerkbank.
+   Papier für alles Lesbare, Metall für alles Bedienbare.
    ============================================================ */
 
 :root {
@@ -10,14 +10,18 @@
   --holz-hell:    #3a281c;
 
   --papier:       #f3e9d2;
-  --papier-schatten: #d9cbac;
+  --papier-warm:  #fbf4e2;
   --papier-alt:   #e8dbbc;
+  --papier-rand:  #d9cbac;
 
   --tinte:        #241f1c;
+  --tinte-matt:   #4c4238;
   --tinte-blass:  #6b6157;
+  --grau:         #7a6e60;
 
-  --band-rot:     #b0362b;
-  --band-rot-hell:#d0503f;
+  --rot:          #b0362b;
+  --rot-hell:     #d0503f;
+  --gruen:        #3f6b32;
   --messing:      #c9a227;
   --messing-tief: #8a6f18;
 
@@ -25,19 +29,19 @@
   --metall-hell:  #4c463f;
   --metall-tief:  #1c1916;
 
-  --schrift-titel: 'Special Elite', 'Courier New', monospace;
-  --schrift-text:  'Courier Prime', 'Courier New', monospace;
-
-  --radius: 4px;
+  --titelschrift: 'Special Elite', 'Courier New', monospace;
+  --textschrift:  'Courier Prime', 'Courier New', monospace;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Manche Elemente unten setzen selbst ein display — das würde das
+   hidden-Attribut aushebeln. Deshalb hier ausdrücklich Vorrang. */
+[hidden] { display: none !important; }
+
 html {
   scroll-behavior: smooth;
   min-height: 100%;
-  /* Die Werkbank liegt auf dem Wurzelelement — so bleibt das Holz
-     auch unter langen Seiten und beim Überscrollen sichtbar. */
   background:
     radial-gradient(ellipse at 50% 0%, rgba(201,162,39,.10), transparent 60%),
     repeating-linear-gradient(96deg, rgba(0,0,0,.16) 0 3px, rgba(255,255,255,.015) 3px 7px),
@@ -49,18 +53,17 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: var(--schrift-text);
+  font-family: var(--textschrift);
   color: var(--papier);
   background: transparent;
 }
 
-/* Feiner Staub über der ganzen Werkstatt */
 .staub {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 999;
-  opacity: .5;
+  opacity: .45;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
 }
@@ -73,47 +76,63 @@ body.erschuettert { animation: ruettel .38s ease; }
   70% { transform: translate(-2px, 1px) }
 }
 
-/* ══════════════ Firmenschild ══════════════ */
+/* Wer weniger Bewegung möchte, bekommt sie auch nicht. */
+.ruhig *, .ruhig *::before, .ruhig *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+}
 
-.firmenschild {
+/* ══════════════ Kopfleiste ══════════════ */
+
+.kopfleiste {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: .85rem clamp(.9rem, 3vw, 2.2rem);
+  gap: .8rem;
+  padding: .7rem clamp(.8rem, 3vw, 2.2rem);
   border-bottom: 2px solid rgba(0,0,0,.5);
-  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.05));
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.08));
   position: sticky;
   top: 0;
   z-index: 50;
+  backdrop-filter: blur(2px);
 }
 
+.marke {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
 .marke__typ {
   display: block;
-  font-family: var(--schrift-titel);
-  font-size: clamp(1.35rem, 3.4vw, 1.9rem);
+  font-family: var(--titelschrift);
+  font-size: clamp(1.25rem, 3.4vw, 1.8rem);
   letter-spacing: .04em;
-  color: var(--papier);
   text-shadow: 0 2px 0 rgba(0,0,0,.6);
 }
-.marke__the { color: var(--band-rot-hell); }
+.marke__the { color: var(--rot-hell); }
 .marke__zusatz {
   display: block;
-  font-size: .66rem;
+  font-size: .64rem;
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--tinte-blass);
-  margin-top: .15rem;
+  margin-top: .1rem;
 }
+
+.kopfleiste__knoepfe { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: flex-end }
 
 .metallknopf {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
-  font-family: var(--schrift-titel);
-  font-size: .82rem;
-  letter-spacing: .06em;
+  gap: .4rem;
+  font-family: var(--titelschrift);
+  font-size: .8rem;
+  letter-spacing: .04em;
   color: var(--papier);
   padding: .5rem .9rem;
   border: 1px solid var(--metall-tief);
@@ -123,59 +142,48 @@ body.erschuettert { animation: ruettel .38s ease; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 2px 5px rgba(0,0,0,.45);
   transition: transform .12s, filter .15s;
 }
-.metallknopf:hover { filter: brightness(1.14); }
-.metallknopf:active { transform: translateY(1px); }
-.metallknopf__lampe {
-  width: 9px; height: 9px;
-  border-radius: 50%;
-  background: var(--messing);
-  box-shadow: 0 0 8px rgba(201,162,39,.9);
-}
-.metallknopf--aus .metallknopf__lampe { background: #55504a; box-shadow: none; }
+.metallknopf:hover { filter: brightness(1.15) }
+.metallknopf:active { transform: translateY(1px) }
 
 /* ══════════════ Schirme ══════════════ */
 
-main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
+main { padding: clamp(1rem, 3vw, 2.2rem) clamp(.7rem, 3vw, 2rem) 3rem; }
 
-.schirm { display: none; animation: einblenden .45s ease both; }
-.schirm--aktiv { display: block; }
-@keyframes einblenden { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+.schirm { display: none; animation: einblenden .4s ease both }
+.schirm--aktiv { display: block }
+@keyframes einblenden { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
 
-.hinweis { color: var(--tinte-blass); font-size: .86rem; line-height: 1.6; }
-.hinweis--klein { font-size: .74rem; }
+.hinweis { color: var(--tinte-blass); font-size: .85rem; line-height: 1.6 }
+.hinweis--klein { font-size: .74rem }
+.hinweis--warnung { color: var(--rot-hell) }
 
 /* ══════════════ Ladeschirm ══════════════ */
 
 .karte {
-  max-width: 460px;
+  max-width: 440px;
   margin: 8vh auto;
   padding: 2rem 1.6rem;
   text-align: center;
   border: 1px solid rgba(201,162,39,.25);
-  border-radius: var(--radius);
+  border-radius: 4px;
   background: rgba(0,0,0,.28);
 }
-.karte__titel {
-  font-family: var(--schrift-titel);
-  font-weight: 400;
-  font-size: 1.3rem;
-  margin: .4rem 0 .6rem;
-}
+.karte__titel { font-family: var(--titelschrift); font-weight: 400; font-size: 1.25rem; margin: .4rem 0 .5rem }
 
-.maschinen-signet svg { width: 190px; max-width: 70%; }
-.sig-korpus { fill: var(--metall); stroke: rgba(255,255,255,.12); }
-.sig-walze  { fill: var(--metall-hell); }
-.sig-papier { fill: var(--papier); }
-.sig-zeile  { stroke: var(--tinte-blass); stroke-width: 3; stroke-linecap: round; }
-.sig-fuss   { fill: var(--metall-tief); }
-.sig-tasten circle { fill: var(--messing); opacity: .85; animation: tastenblink 1.6s infinite; }
+.maschinen-signet svg { width: 180px; max-width: 70% }
+.sig-korpus { fill: var(--metall); stroke: rgba(255,255,255,.12) }
+.sig-walze  { fill: var(--metall-hell) }
+.sig-papier { fill: var(--papier) }
+.sig-zeile  { stroke: var(--tinte-blass); stroke-width: 3; stroke-linecap: round }
+.sig-fuss   { fill: var(--metall-tief) }
+.sig-tasten circle { fill: var(--messing); opacity: .85; animation: tastenblink 1.6s infinite }
 .sig-tasten circle:nth-child(2) { animation-delay: .14s }
 .sig-tasten circle:nth-child(3) { animation-delay: .28s }
 .sig-tasten circle:nth-child(4) { animation-delay: .42s }
 .sig-tasten circle:nth-child(5) { animation-delay: .56s }
 .sig-tasten circle:nth-child(6) { animation-delay: .70s }
 .sig-tasten circle:nth-child(7) { animation-delay: .84s }
-@keyframes tastenblink { 0%,100% { opacity:.3; transform: translateY(0) } 50% { opacity:1; transform: translateY(-2px) } }
+@keyframes tastenblink { 0%,100% { opacity:.3 } 50% { opacity:1 } }
 
 .ladebalken {
   height: 10px;
@@ -189,15 +197,15 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   height: 100%;
   width: 4%;
   transition: width .5s ease;
-  background: linear-gradient(90deg, var(--band-rot), var(--band-rot-hell) 60%, var(--messing));
+  background: linear-gradient(90deg, var(--rot), var(--rot-hell) 60%, var(--messing));
 }
 
-/* ══════════════ Plakat (Start) ══════════════ */
+/* ══════════════ Papierseiten (Menü, Anleitung, Training …) ══════════════ */
 
-.plakat {
-  max-width: 780px;
+.blattseite {
+  max-width: 760px;
   margin: 0 auto;
-  padding: clamp(1.4rem, 4vw, 2.8rem);
+  padding: clamp(1.4rem, 4vw, 2.6rem);
   color: var(--tinte);
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.014) 0 2px, transparent 2px 4px),
@@ -207,67 +215,241 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
     0 0 0 1px rgba(0,0,0,.35),
     0 0 0 8px var(--papier),
     0 0 0 10px rgba(0,0,0,.4),
-    0 26px 50px rgba(0,0,0,.55);
+    0 24px 46px rgba(0,0,0,.55);
   text-align: center;
-  position: relative;
 }
-.plakat::before,
-.plakat::after {
-  content: '';
-  position: absolute;
-  left: 1.4rem; right: 1.4rem;
-  height: 3px;
-  background: repeating-linear-gradient(90deg, var(--tinte) 0 12px, transparent 12px 18px);
-  opacity: .55;
-}
-.plakat::before { top: .9rem }
-.plakat::after  { bottom: .9rem }
+.blattseite--breit { max-width: 900px }
 
-.plakat__zeile-oben {
-  font-family: var(--schrift-titel);
-  letter-spacing: .3em;
-  font-size: .72rem;
+.ueberzeile {
+  font-family: var(--titelschrift);
+  letter-spacing: .26em;
+  font-size: .7rem;
   text-transform: uppercase;
-  color: var(--band-rot);
-  margin: .5rem 0 1rem;
+  color: var(--rot);
+  margin: 0 0 .9rem;
 }
-.plakat__titel {
-  font-family: var(--schrift-titel);
+.grossertitel {
+  font-family: var(--titelschrift);
   font-weight: 400;
-  font-size: clamp(2.1rem, 7.5vw, 3.6rem);
-  line-height: 1.05;
+  font-size: clamp(2rem, 7vw, 3.3rem);
+  line-height: 1.06;
   margin: 0 0 .8rem;
-  letter-spacing: .01em;
-  text-shadow: 1px 1px 0 rgba(0,0,0,.16);
 }
-.plakat__untertitel {
-  max-width: 52ch;
-  margin: 0 auto 1.6rem;
+.grossertitel--klein { font-size: clamp(1.7rem, 5.5vw, 2.5rem) }
+
+.einleitung {
+  max-width: 54ch;
+  margin: 0 auto 1.8rem;
   font-size: .95rem;
   line-height: 1.75;
-  color: #4a4038;
+  color: var(--tinte-matt);
+}
+.einleitung--schmal { max-width: 48ch; margin-bottom: 1.4rem }
+
+.abschnittstitel {
+  font-family: var(--titelschrift);
+  font-weight: 400;
+  font-size: 1rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--tinte);
+  margin: 1.8rem 0 .8rem;
+  padding-bottom: .3rem;
+  border-bottom: 2px solid rgba(36,31,28,.25);
+  text-align: left;
 }
 
-/* Stufenübersicht auf dem Plakat */
-.stufenschau {
-  border-top: 2px solid rgba(36,31,28,.3);
-  border-bottom: 2px solid rgba(36,31,28,.3);
-  padding: .9rem 0;
-  margin-bottom: 1.6rem;
+.fliesstext {
+  text-align: left;
+  font-size: .92rem;
+  line-height: 1.75;
+  color: var(--tinte-matt);
+  margin: 0 0 1rem;
 }
-.stufenschau ol { list-style: none; margin: 0; padding: 0; }
-.stufenschau__eintrag {
+.fliessliste {
+  text-align: left;
+  font-size: .9rem;
+  line-height: 1.7;
+  color: var(--tinte-matt);
+  margin: 0 0 1rem;
+  padding-left: 1.2rem;
+}
+.fliessliste li { margin-bottom: .4rem }
+
+kbd {
+  font-family: var(--titelschrift);
+  font-size: .82rem;
+  padding: .08rem .4rem;
+  border: 1px solid rgba(36,31,28,.4);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--papier-warm);
+}
+
+/* ══════════════ Menükarten ══════════════ */
+
+.menuekarten {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: .8rem;
+  margin-bottom: 1.6rem;
+  text-align: left;
+}
+.menuekarte {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  grid-template-areas: 'symbol titel' 'symbol text';
+  gap: .1rem .7rem;
+  align-content: start;
+  padding: 1rem;
+  cursor: pointer;
+  border: 2px solid var(--tinte);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--tinte);
+  font-family: var(--textschrift);
+  text-align: left;
+  transition: transform .12s, background .15s, color .15s;
+}
+.menuekarte:hover:not(:disabled) { transform: translateY(-3px) }
+.menuekarte:disabled { opacity: .4; cursor: not-allowed }
+.menuekarte__symbol {
+  grid-area: symbol;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  width: 2rem; height: 2rem;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--tinte);
+  color: var(--papier);
+}
+.menuekarte__titel {
+  grid-area: titel;
+  font-family: var(--titelschrift);
+  font-size: 1.1rem;
+}
+.menuekarte__text { grid-area: text; font-size: .8rem; line-height: 1.55; color: var(--tinte-matt) }
+.menuekarte--haupt {
+  background: var(--tinte);
+  color: var(--papier);
+  border-color: var(--tinte);
+}
+.menuekarte--haupt .menuekarte__symbol { background: var(--rot); color: var(--papier) }
+.menuekarte--haupt .menuekarte__text { color: rgba(243,233,210,.75) }
+
+/* ══════════════ Bestenliste ══════════════ */
+
+.bestenliste ul { list-style: none; margin: 0; padding: 0 }
+.bestenliste__zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .4rem .2rem;
+  border-bottom: 1px dotted rgba(36,31,28,.28);
+  font-size: .88rem;
+}
+.bestenliste__name { color: var(--tinte) }
+.bestenliste__wert { font-family: var(--titelschrift); color: var(--rot) }
+
+/* ══════════════ Schwierigkeitswahl ══════════════ */
+
+.stufenwahl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: .8rem;
+  margin-bottom: 1.6rem;
+  text-align: left;
+}
+.stufenkarte {
+  display: block;
+  padding: 1rem;
+  cursor: pointer;
+  border: 2px solid var(--tinte);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--tinte);
+  font-family: var(--textschrift);
+  text-align: left;
+  transition: transform .12s, background .15s, color .15s;
+}
+.stufenkarte:hover { transform: translateY(-3px) }
+.stufenkarte--aktiv { background: var(--tinte); color: var(--papier) }
+.stufenkarte__name {
+  display: block;
+  font-family: var(--titelschrift);
+  font-size: 1.2rem;
+  margin-bottom: .3rem;
+}
+.stufenkarte__text { display: block; font-size: .8rem; line-height: 1.55; color: var(--tinte-matt) }
+.stufenkarte--aktiv .stufenkarte__text { color: rgba(243,233,210,.8) }
+.stufenkarte__daten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .8rem;
+  margin-top: .6rem;
+  font-size: .72rem;
+  color: var(--grau);
+}
+.stufenkarte--aktiv .stufenkarte__daten { color: var(--messing) }
+
+/* ══════════════ Knöpfe ══════════════ */
+
+.knopfreihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  justify-content: center;
+  align-items: center;
+  margin: 1.2rem 0 .6rem;
+}
+.knopfreihe--links { justify-content: flex-start }
+
+.hauptknopf {
+  cursor: pointer;
+  font-family: var(--titelschrift);
+  font-size: 1.05rem;
+  letter-spacing: .03em;
+  padding: .8rem 1.9rem;
+  border: 0;
+  border-radius: 3px;
+  color: var(--papier);
+  background: linear-gradient(180deg, var(--rot-hell), var(--rot) 55%, #8c261d);
+  box-shadow: 0 5px 0 #6d1c15, 0 12px 22px rgba(0,0,0,.45);
+  transition: transform .1s, box-shadow .1s, filter .15s;
+}
+.hauptknopf:hover:not(:disabled) { filter: brightness(1.08) }
+.hauptknopf:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #6d1c15 }
+.hauptknopf:disabled { filter: grayscale(.7); opacity: .55; cursor: not-allowed }
+
+.nebenknopf {
+  cursor: pointer;
+  font-family: var(--titelschrift);
+  font-size: .88rem;
+  padding: .65rem 1.2rem;
+  border: 2px solid var(--tinte);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--tinte);
+  transition: background .15s, color .15s, transform .1s;
+}
+.nebenknopf:hover { background: var(--tinte); color: var(--papier) }
+.nebenknopf:active { transform: translateY(2px) }
+.nebenknopf--warnung { border-color: var(--rot); color: var(--rot) }
+.nebenknopf--warnung:hover { background: var(--rot); color: var(--papier) }
+
+/* ══════════════ Anleitung: Stufenliste ══════════════ */
+
+.stufenliste { list-style: none; margin: 0 0 1.2rem; padding: 0; text-align: left }
+.stufenliste__zeile {
   display: grid;
   grid-template-columns: 1.7rem 1fr auto;
   align-items: center;
   gap: .7rem;
-  padding: .28rem .3rem;
-  text-align: left;
+  padding: .3rem .2rem;
   border-bottom: 1px dotted rgba(36,31,28,.28);
 }
-.stufenschau__eintrag:last-child { border-bottom: 0 }
-.stufenschau__nr {
-  font-family: var(--schrift-titel);
+.stufenliste__nr {
+  font-family: var(--titelschrift);
   width: 1.7rem; height: 1.7rem;
   display: grid; place-items: center;
   border-radius: 50%;
@@ -275,85 +457,107 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   color: var(--papier);
   font-size: .78rem;
 }
-.stufenschau__name { font-size: .92rem }
-.stufenschau__wert {
-  font-family: var(--schrift-titel);
-  color: var(--band-rot);
-  font-size: .9rem;
-}
-.stufenschau__eintrag:nth-child(n+2) .stufenschau__nr { background: var(--tinte-blass) }
+.stufenliste__zeile:nth-child(n+2) .stufenliste__nr { background: var(--tinte-blass) }
+.stufenliste__name { font-size: .92rem }
+.stufenliste__wert { font-family: var(--titelschrift); color: var(--rot); font-size: .88rem }
 
-/* Dienstgrad-Wahl */
-.wahl { margin-bottom: 1.5rem }
-.wahl__titel {
-  font-family: var(--schrift-titel);
-  font-weight: 400;
-  font-size: 1rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  margin: 0 0 .7rem;
+/* ══════════════ Reiter (Training) ══════════════ */
+
+.reiter {
+  display: flex;
+  gap: .4rem;
+  justify-content: center;
+  border-bottom: 2px solid rgba(36,31,28,.25);
+  margin-bottom: 1.4rem;
 }
-.wahl__reihe {
+.reiter__knopf {
+  cursor: pointer;
+  font-family: var(--titelschrift);
+  font-size: .92rem;
+  padding: .6rem 1.1rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--grau);
+  margin-bottom: -2px;
+}
+.reiter__knopf--aktiv { color: var(--tinte); border-bottom-color: var(--rot) }
+.reiter__inhalt { display: none }
+.reiter__inhalt--aktiv { display: block }
+
+/* ══════════════ Eingabefelder ══════════════ */
+
+.feldgruppe {
   display: flex;
   flex-wrap: wrap;
-  gap: .6rem;
+  gap: .8rem;
   justify-content: center;
+  margin-bottom: .8rem;
 }
-.gradknopf {
-  font-family: var(--schrift-text);
-  cursor: pointer;
-  padding: .55rem 1rem;
-  border: 2px solid var(--tinte);
-  border-radius: 2px;
-  background: transparent;
-  color: var(--tinte);
-  text-align: center;
-  transition: background .15s, color .15s, transform .1s;
-}
-.gradknopf:hover { transform: translateY(-2px) }
-.gradknopf--aktiv { background: var(--tinte); color: var(--papier) }
-.gradknopf__name {
+.feld { display: block; text-align: left; flex: 0 1 200px }
+.feld--breit { flex: 1 1 240px }
+.feld__schild {
   display: block;
-  font-family: var(--schrift-titel);
-  font-size: 1rem;
-}
-.gradknopf__detail { display: block; font-size: .7rem; opacity: .75 }
-#grad-hinweis { margin: .7rem auto 0; max-width: 46ch; color: #574c42 }
-
-/* Der große Hebel */
-.wagenhebel {
-  display: inline-block;
-  cursor: pointer;
-  font-family: var(--schrift-titel);
-  padding: .9rem 2.2rem;
-  border: 0;
-  border-radius: 3px;
-  color: var(--papier);
-  background: linear-gradient(180deg, var(--band-rot-hell), var(--band-rot) 55%, #8c261d);
-  box-shadow: 0 5px 0 #6d1c15, 0 12px 22px rgba(0,0,0,.45);
-  transition: transform .1s, box-shadow .1s;
-}
-.wagenhebel:hover { filter: brightness(1.07) }
-.wagenhebel:active { transform: translateY(4px); box-shadow: 0 1px 0 #6d1c15, 0 6px 12px rgba(0,0,0,.45) }
-.wagenhebel:disabled { filter: grayscale(.7); cursor: not-allowed; opacity: .6 }
-.wagenhebel__text { display: block; font-size: 1.12rem; letter-spacing: .04em }
-.wagenhebel__unterschrift {
-  display: block;
-  font-family: var(--schrift-text);
   font-size: .68rem;
-  opacity: .8;
-  margin-top: .15rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--grau);
+  margin-bottom: .25rem;
 }
-.wagenhebel--klein { padding: .7rem 1.5rem }
-.wagenhebel--klein .wagenhebel__text { font-size: .98rem }
-
-.bestwert {
-  font-family: var(--schrift-titel);
-  margin: 1.2rem 0 .3rem;
-  color: var(--tinte);
+.feld__auswahl, .feld__eingabe {
+  width: 100%;
+  font-family: var(--textschrift);
   font-size: .9rem;
+  padding: .5rem .6rem;
+  border: 2px solid var(--tinte);
+  border-radius: 3px;
+  background: var(--papier-warm);
+  color: var(--tinte);
 }
-#lager-info { color: #5c5148; max-width: 50ch; margin: 0 auto }
+.feld__eingabe::placeholder { color: var(--grau) }
+
+/* ══════════════ Schriftenkatalog ══════════════ */
+
+.katalog {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  text-align: left;
+  max-height: 60vh;
+  overflow-y: auto;
+  border-top: 1px solid rgba(36,31,28,.2);
+}
+.katalog__zeile { border-bottom: 1px dotted rgba(36,31,28,.28) }
+.katalog__kopf {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  width: 100%;
+  padding: .7rem .3rem;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: var(--tinte);
+  text-align: left;
+}
+.katalog__kopf:hover { background: rgba(36,31,28,.05) }
+.katalog__probe { font-size: 1.35rem; flex: 1 1 auto; line-height: 1.3; word-break: break-word }
+.katalog__namen { flex: 0 0 auto; text-align: right }
+.katalog__name { display: block; font-family: var(--titelschrift); font-size: .88rem }
+.katalog__gattung { display: block; font-size: .68rem; color: var(--grau) }
+.katalog__detail { padding: 0 .3rem .9rem }
+.katalog__meta { font-size: .78rem; color: var(--grau); margin: 0 0 .3rem }
+.katalog__wissen { font-size: .85rem; line-height: 1.65; color: var(--tinte-matt); margin: 0 0 .6rem }
+.katalog__zeile-probe {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0;
+  padding: .6rem;
+  background: rgba(255,255,255,.35);
+  border-radius: 3px;
+  word-break: break-word;
+}
+.katalog__leer { padding: 1.2rem .3rem; color: var(--grau); font-size: .88rem }
 
 /* ══════════════ Die Maschine ══════════════ */
 
@@ -362,8 +566,7 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   margin: 0 auto;
   padding: clamp(.8rem, 2.4vw, 1.4rem);
   border-radius: 14px 14px 20px 20px;
-  background:
-    linear-gradient(180deg, var(--metall-hell), var(--metall) 30%, var(--metall-tief));
+  background: linear-gradient(180deg, var(--metall-hell), var(--metall) 30%, var(--metall-tief));
   box-shadow:
     inset 0 2px 0 rgba(255,255,255,.1),
     inset 0 -3px 12px rgba(0,0,0,.6),
@@ -376,12 +579,12 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   flex-wrap: wrap;
   gap: .6rem;
   justify-content: space-between;
-  margin-bottom: .9rem;
+  margin-bottom: .8rem;
 }
 .anzeige {
   flex: 1 1 30%;
-  min-width: 120px;
-  padding: .45rem .7rem;
+  min-width: 110px;
+  padding: .4rem .7rem;
   border-radius: 3px;
   background: linear-gradient(180deg, #100e0c, #1d1a16);
   border: 1px solid rgba(0,0,0,.8);
@@ -390,30 +593,54 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
 }
 .anzeige__schild {
   display: block;
-  font-size: .6rem;
-  letter-spacing: .18em;
+  font-size: .58rem;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--tinte-blass);
 }
 .anzeige__wert {
   display: block;
-  font-family: var(--schrift-titel);
-  font-size: 1.32rem;
+  font-family: var(--titelschrift);
+  font-size: 1.3rem;
   color: var(--messing);
   text-shadow: 0 0 12px rgba(201,162,39,.35);
 }
-.anzeige--wert .anzeige__wert { color: var(--band-rot-hell); text-shadow: 0 0 12px rgba(208,80,63,.35) }
+.anzeige--wert .anzeige__wert { color: var(--rot-hell); text-shadow: 0 0 12px rgba(208,80,63,.35) }
 .zaehlwerk { font-variant-numeric: tabular-nums }
+/* Im Training gibt es keine Punkte — die dritte Anzeige entfällt. */
+.hud--training .anzeige--wert { display: none }
 
-/* Walze mit Knäufen */
-.walzenbalken {
+/* Zeitleiste */
+.zeitleiste {
   display: flex;
   align-items: center;
-  gap: .4rem;
-  margin: 0 .2rem -6px;
-  position: relative;
-  z-index: 3;
+  gap: .6rem;
+  margin-bottom: .7rem;
+  padding: .35rem .6rem;
+  border-radius: 3px;
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(0,0,0,.7);
 }
+.zeitleiste__balken {
+  height: 8px;
+  flex: 1;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--messing), #e0c04a);
+  transition: width .12s linear, background .3s;
+}
+.zeitleiste__balken--knapp { background: linear-gradient(90deg, var(--rot), var(--rot-hell)); animation: pulsieren .8s infinite }
+@keyframes pulsieren { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+.zeitleiste__zahl {
+  font-family: var(--titelschrift);
+  font-size: .95rem;
+  color: var(--papier);
+  min-width: 2.2ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Walze */
+.walzenbalken { display: flex; align-items: center; gap: .4rem; margin: 0 .2rem -6px; position: relative; z-index: 3 }
 .walzenbalken__riffel {
   flex: 1;
   height: 22px;
@@ -430,13 +657,13 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   box-shadow: 0 3px 6px rgba(0,0,0,.6);
 }
 
-/* Das Blatt Papier */
+/* Blatt */
 .blatt {
   position: relative;
   padding: 1.1rem 1rem .7rem;
   background:
     repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 5px),
-    linear-gradient(175deg, #fbf4e2, var(--papier) 55%, var(--papier-schatten));
+    linear-gradient(175deg, var(--papier-warm), var(--papier) 55%, var(--papier-rand));
   border-radius: 2px 2px 5px 5px;
   box-shadow: 0 14px 26px rgba(0,0,0,.5), inset 0 -12px 20px rgba(0,0,0,.06);
   color: var(--tinte);
@@ -449,11 +676,7 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   100% { transform: none; opacity: 1 }
 }
 .blatt--ruck { animation: vorschub .3s ease }
-@keyframes vorschub {
-  0% { transform: translateY(0) }
-  40% { transform: translateY(-7px) }
-  100% { transform: translateY(0) }
-}
+@keyframes vorschub { 0%,100% { transform: translateY(0) } 40% { transform: translateY(-7px) } }
 .blatt__lochung {
   position: absolute;
   top: 6px; left: 0; right: 0;
@@ -465,37 +688,20 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   display: flex;
   justify-content: space-between;
   gap: .6rem;
-  font-size: .72rem;
-  letter-spacing: .12em;
+  font-size: .7rem;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: #6d6154;
   border-bottom: 1px solid rgba(36,31,28,.16);
   padding-bottom: .45rem;
 }
 
-.probe {
-  display: block;
-  width: 100%;
-  height: clamp(190px, 34vh, 320px);
-}
+.probe { display: block; width: 100%; height: clamp(190px, 32vh, 300px) }
 
 .blatt__fuss { border-top: 1px solid rgba(36,31,28,.16); padding-top: .5rem }
 
-/* Stufenleiste als Kerben am Blattrand */
-.stufenleiste {
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  gap: .3rem;
-  margin: 0; padding: 0;
-}
-.kerbe {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .25rem;
-}
+.stufenleiste { list-style: none; display: flex; justify-content: space-between; gap: .3rem; margin: 0; padding: 0 }
+.kerbe { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .25rem }
 .kerbe__marke {
   width: 100%;
   height: 7px;
@@ -506,78 +712,79 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
 .kerbe__nr { font-size: .62rem; color: #8a7f70 }
 .kerbe--auf .kerbe__marke { background: var(--tinte-blass) }
 .kerbe--auf .kerbe__nr { color: #6d6154 }
-.kerbe--jetzt .kerbe__marke {
-  background: var(--band-rot);
-  box-shadow: 0 0 10px rgba(176,54,43,.6);
-}
-.kerbe--jetzt .kerbe__nr { color: var(--band-rot); font-weight: 700 }
+.kerbe--jetzt .kerbe__marke { background: var(--rot); box-shadow: 0 0 10px rgba(176,54,43,.6) }
+.kerbe--jetzt .kerbe__nr { color: var(--rot); font-weight: 700 }
 
 /* ══════════════ Bedienfeld ══════════════ */
 
-.bedienfeld {
-  margin-top: 1.1rem;
-  display: grid;
-  gap: .9rem;
-}
+.bedienfeld { margin-top: 1rem; display: grid; gap: .7rem }
 
-.hebel {
-  display: flex;
-  align-items: center;
-  gap: .9rem;
-  width: 100%;
+.werkzeugreihe { display: flex; gap: .6rem; flex-wrap: wrap }
+.werkzeug {
+  flex: 1 1 160px;
   cursor: pointer;
-  padding: .7rem 1rem;
+  padding: .65rem 1rem;
   border-radius: 8px;
   border: 1px solid rgba(0,0,0,.6);
   color: var(--papier);
   text-align: left;
+  font-family: var(--textschrift);
   background: linear-gradient(180deg, #45403a, #2a2621);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 4px 10px rgba(0,0,0,.5);
   transition: transform .1s, filter .15s;
 }
-.hebel:hover:not(:disabled) { filter: brightness(1.12) }
-.hebel:active:not(:disabled) { transform: translateY(2px) }
-.hebel:disabled { opacity: .45; cursor: not-allowed }
-.hebel__stange {
-  width: 14px; height: 34px;
-  flex: none;
-  border-radius: 7px;
-  background: linear-gradient(180deg, var(--messing), var(--messing-tief));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 2px 5px rgba(0,0,0,.6);
-  transition: transform .18s;
-}
-.hebel:active:not(:disabled) .hebel__stange { transform: rotate(16deg) translateY(3px) }
-.hebel__beschriftung strong {
-  display: block;
-  font-family: var(--schrift-titel);
-  font-size: 1.02rem;
-  letter-spacing: .04em;
-}
-.hebel__beschriftung small { color: var(--tinte-blass); font-size: .74rem }
+.werkzeug--breit { flex: 2 1 260px }
+.werkzeug:hover:not(:disabled) { filter: brightness(1.14) }
+.werkzeug:active:not(:disabled) { transform: translateY(2px) }
+.werkzeug:disabled { opacity: .45; cursor: not-allowed }
+.werkzeug__titel { display: block; font-family: var(--titelschrift); font-size: 1rem; letter-spacing: .03em }
+.werkzeug__preis { display: block; color: var(--tinte-blass); font-size: .72rem; margin-top: .1rem }
 
-/* Die Tastatur */
-.tastatur {
-  display: grid;
-  gap: .6rem;
-  grid-template-columns: repeat(2, 1fr);
+/* Tipps */
+.tippreihe { display: flex; gap: .5rem; flex-wrap: wrap }
+.tippknopf {
+  flex: 1 1 120px;
+  cursor: pointer;
+  padding: .5rem .7rem;
+  border-radius: 6px;
+  border: 1px solid rgba(201,162,39,.45);
+  background: linear-gradient(180deg, rgba(201,162,39,.18), rgba(201,162,39,.05));
+  color: var(--papier);
+  font-family: var(--textschrift);
+  transition: filter .15s, transform .1s;
 }
+.tippknopf:hover:not(:disabled) { filter: brightness(1.25) }
+.tippknopf:active:not(:disabled) { transform: translateY(2px) }
+.tippknopf:disabled { opacity: .4; cursor: not-allowed }
+.tippknopf--genutzt { opacity: .35 }
+.tippknopf__name { display: block; font-family: var(--titelschrift); font-size: .9rem }
+.tippknopf__preis { display: block; font-size: .7rem; color: var(--messing) }
+
+.tippausgabe {
+  margin: 0;
+  padding: .6rem .8rem;
+  border-radius: 6px;
+  background: rgba(0,0,0,.35);
+  border-left: 3px solid var(--messing);
+  font-size: .85rem;
+  line-height: 1.6;
+  color: var(--papier);
+}
+.tippausgabe__zeile { display: block }
+.tippausgabe__zeile + .tippausgabe__zeile { margin-top: .3rem }
+
+/* Antworttasten */
+.tastatur { display: grid; gap: .6rem; grid-template-columns: repeat(2, 1fr) }
 .tastatur[data-spalten="3"] { grid-template-columns: repeat(3, 1fr) }
 .tastatur[data-spalten="4"] { grid-template-columns: repeat(4, 1fr) }
 
-.taste {
-  position: relative;
-  cursor: pointer;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  perspective: 400px;
-}
+.taste { position: relative; cursor: pointer; padding: 0; border: 0; background: transparent }
 .taste__kappe {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: .5rem;
-  min-height: 62px;
+  min-height: 60px;
   padding: .6rem .7rem;
   border-radius: 12px;
   color: var(--papier);
@@ -593,7 +800,7 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
 .taste:hover:not(:disabled) .taste__kappe { filter: brightness(1.15) }
 .taste:active:not(:disabled) .taste__kappe {
   transform: translateY(5px);
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.1), inset 0 -3px 8px rgba(0,0,0,.5), 0 1px 0 #14110e;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.1), 0 1px 0 #14110e;
 }
 .taste:disabled { cursor: not-allowed }
 .taste__ziffer {
@@ -601,40 +808,33 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   width: 22px; height: 22px;
   display: grid; place-items: center;
   border-radius: 50%;
-  font-family: var(--schrift-titel);
+  font-family: var(--titelschrift);
   font-size: .72rem;
   color: var(--metall-tief);
   background: linear-gradient(180deg, #e0d3b4, #b3a586);
   box-shadow: inset 0 -1px 2px rgba(0,0,0,.4);
 }
-.taste__name {
-  font-family: var(--schrift-titel);
-  font-size: clamp(.78rem, 2vw, .96rem);
-  letter-spacing: .02em;
-  line-height: 1.25;
-}
+.taste__name { font-family: var(--titelschrift); font-size: clamp(.78rem, 2vw, .95rem); line-height: 1.25 }
 
 .taste--treffer .taste__kappe {
   background: linear-gradient(180deg, #4d7a3f, #2f5127);
   box-shadow: inset 0 2px 0 rgba(255,255,255,.2), 0 6px 0 #1d3418, 0 0 26px rgba(120,190,100,.45);
   animation: treffer .5s ease;
 }
-@keyframes treffer {
-  0% { transform: scale(1) } 40% { transform: scale(1.07) } 100% { transform: scale(1) }
-}
+@keyframes treffer { 0%,100% { transform: scale(1) } 40% { transform: scale(1.07) } }
 .taste--verklemmt .taste__kappe {
   background: linear-gradient(180deg, #3a2320, #241615);
   color: #7b6a66;
   box-shadow: inset 0 2px 6px rgba(0,0,0,.7), 0 2px 0 #14110e;
   transform: translateY(4px) rotate(-1.4deg);
   text-decoration: line-through;
-  text-decoration-color: var(--band-rot);
+  text-decoration-color: var(--rot);
   text-decoration-thickness: 2px;
 }
 
-/* ══════════════ Auflösung ══════════════ */
+/* ══════════════ Überblendungen (Auflösung, Fenster) ══════════════ */
 
-.aufloesung {
+.ueberblendung {
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -645,34 +845,56 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   backdrop-filter: blur(3px);
   animation: einblenden .3s ease both;
 }
-.aufloesung[hidden] { display: none }
+.ueberblendung[hidden] { display: none }
 
-.aufloesung__blatt {
+.ueberblendung__blatt {
   position: relative;
   width: min(560px, 100%);
   max-height: 88vh;
   overflow-y: auto;
-  padding: 2rem 1.6rem 1.6rem;
+  padding: 2rem 1.6rem 1.4rem;
   text-align: center;
   color: var(--tinte);
-  background: linear-gradient(160deg, #fbf4e2, var(--papier-alt));
+  background: linear-gradient(160deg, var(--papier-warm), var(--papier-alt));
   border-radius: 3px;
   box-shadow: 0 24px 50px rgba(0,0,0,.7);
-  animation: zettelrein .45s cubic-bezier(.2,1,.3,1) both;
+  animation: zettelrein .4s cubic-bezier(.2,1,.3,1) both;
 }
+.ueberblendung__blatt--eng { width: min(420px, 100%); text-align: left }
 @keyframes zettelrein {
-  from { transform: translateY(30px) rotate(-1.2deg); opacity: 0 }
+  from { transform: translateY(28px) rotate(-1deg); opacity: 0 }
   to   { transform: none; opacity: 1 }
+}
+
+.schliessen {
+  position: absolute;
+  top: .5rem; right: .6rem;
+  width: 2rem; height: 2rem;
+  cursor: pointer;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--grau);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.schliessen:hover { color: var(--tinte); background: rgba(36,31,28,.08) }
+
+.fenster__titel {
+  font-family: var(--titelschrift);
+  font-weight: 400;
+  font-size: 1.35rem;
+  margin: 0 0 1.2rem;
 }
 
 .stempel {
   position: absolute;
   top: .9rem; right: .9rem;
-  font-family: var(--schrift-titel);
-  font-size: .95rem;
+  font-family: var(--titelschrift);
+  font-size: .92rem;
   letter-spacing: .12em;
   text-transform: uppercase;
-  padding: .35rem .8rem;
+  padding: .3rem .8rem;
   border: 3px double currentColor;
   border-radius: 3px;
   transform: rotate(9deg);
@@ -683,42 +905,28 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   from { transform: rotate(9deg) scale(2.4); opacity: 0 }
   to   { transform: rotate(9deg) scale(1); opacity: .82 }
 }
-.stempel--gut { color: #3f6b32 }
-.stempel--schlecht { color: var(--band-rot) }
+.stempel--gut { color: var(--gruen) }
+.stempel--schlecht { color: var(--rot) }
 
 .aufloesung__vorspann {
   font-size: .72rem;
-  letter-spacing: .2em;
+  letter-spacing: .16em;
   text-transform: uppercase;
-  color: #7a6e60;
-  margin: 0 0 .3rem;
+  color: var(--grau);
+  margin: .4rem 0 .3rem;
+  padding-right: 5rem;
 }
-.aufloesung__name {
-  font-size: clamp(1.9rem, 6vw, 2.7rem);
-  margin: 0 0 .3rem;
-  line-height: 1.15;
-  word-break: break-word;
-}
-.aufloesung__meta {
-  font-size: .8rem;
-  color: #6d6154;
-  margin: 0 0 1rem;
-}
+.aufloesung__name { font-size: clamp(1.8rem, 6vw, 2.6rem); margin: 0 0 .3rem; line-height: 1.15; word-break: break-word }
+.aufloesung__meta { font-size: .8rem; color: #6d6154; margin: 0 0 1rem }
 .aufloesung__probe {
-  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  font-size: clamp(1.4rem, 5vw, 2rem);
   margin: 0 0 1rem;
   padding: .7rem .4rem;
   border-top: 1px solid rgba(36,31,28,.2);
   border-bottom: 1px solid rgba(36,31,28,.2);
   word-break: break-word;
 }
-.aufloesung__wissen {
-  font-size: .88rem;
-  line-height: 1.7;
-  color: #4c4238;
-  max-width: 46ch;
-  margin: 0 auto 1.1rem;
-}
+.aufloesung__wissen { font-size: .87rem; line-height: 1.7; color: var(--tinte-matt); max-width: 46ch; margin: 0 auto 1.1rem }
 
 .aufloesung__vergleich {
   border: 1px dashed rgba(176,54,43,.55);
@@ -730,22 +938,55 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
 .vergleich__schild {
   display: block;
   font-size: .62rem;
-  letter-spacing: .18em;
+  letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--band-rot);
+  color: var(--rot);
   margin-bottom: .25rem;
 }
-.vergleich__probe { font-size: 1.35rem; margin: 0 0 .2rem; word-break: break-word }
+.vergleich__probe { font-size: 1.3rem; margin: 0 0 .2rem; word-break: break-word }
 .vergleich__name { font-size: .78rem; color: #6d6154 }
 
-.aufloesung__punkte {
-  font-family: var(--schrift-titel);
-  font-size: 1.28rem;
-  margin: 0 0 1.2rem;
-  color: var(--band-rot);
-}
+.aufloesung__punkte { font-family: var(--titelschrift); font-size: 1.25rem; margin: 0 0 .6rem; color: var(--rot) }
 
-/* ══════════════ Zeugnis ══════════════ */
+/* ══════════════ Einstellungen ══════════════ */
+
+.regler { margin-bottom: 1.3rem }
+.regler__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .8rem;
+  margin-bottom: .4rem;
+}
+.regler__kopf label { font-family: var(--titelschrift); font-size: 1rem }
+
+.schalter {
+  cursor: pointer;
+  font-family: var(--titelschrift);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  padding: .25rem .8rem;
+  border: 2px solid var(--gruen);
+  border-radius: 999px;
+  background: var(--gruen);
+  color: var(--papier-warm);
+}
+.schalter--aus { background: transparent; border-color: var(--grau); color: var(--grau) }
+
+.regler__schieber {
+  width: 100%;
+  accent-color: var(--rot);
+  cursor: pointer;
+}
+.regler__schieber:disabled { opacity: .4; cursor: not-allowed }
+.regler__wert { display: block; font-size: .74rem; color: var(--grau); text-align: right }
+
+.haken { display: grid; gap: .6rem; margin-bottom: 1.2rem; font-size: .88rem; color: var(--tinte-matt) }
+.haken label { display: flex; align-items: center; gap: .5rem; cursor: pointer }
+.haken input { accent-color: var(--rot); width: 1.05rem; height: 1.05rem }
+
+/* ══════════════ Ergebnis ══════════════ */
 
 .zeugnis {
   max-width: 720px;
@@ -760,54 +1001,27 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   border: 3px double rgba(36,31,28,.55);
   padding: clamp(1.3rem, 4vw, 2.4rem) clamp(1rem, 4vw, 2.4rem) 1.6rem;
   text-align: center;
-  position: relative;
-}
-.zeugnis__kopf {
-  font-family: var(--schrift-titel);
-  letter-spacing: .28em;
-  text-transform: uppercase;
-  font-size: .68rem;
-  color: #7a6e60;
-  margin: 0;
 }
 .zeugnis__titel {
-  font-family: var(--schrift-titel);
+  font-family: var(--titelschrift);
   font-weight: 400;
-  font-size: clamp(2rem, 7vw, 3rem);
-  margin: .3rem 0 .1rem;
-  letter-spacing: .12em;
+  font-size: clamp(1.9rem, 6.5vw, 2.8rem);
+  margin: .1rem 0 1.2rem;
+  letter-spacing: .1em;
 }
-.zeugnis__sub { font-size: .8rem; color: #6d6154; margin: 0 0 1.4rem }
-
-.zeugnis__rang {
-  font-family: var(--schrift-titel);
-  font-size: clamp(1.3rem, 4.5vw, 1.9rem);
-  color: var(--band-rot);
-  margin: 0 0 .2rem;
-}
-.zeugnis__punkte {
-  font-family: var(--schrift-titel);
-  font-size: clamp(2.6rem, 10vw, 4rem);
-  line-height: 1;
-  margin: .3rem 0 .2rem;
-}
+.zeugnis__rang { font-family: var(--titelschrift); font-size: clamp(1.3rem, 4.5vw, 1.9rem); color: var(--rot); margin: 0 0 .2rem }
+.zeugnis__punkte { font-family: var(--titelschrift); font-size: clamp(2.5rem, 10vw, 3.8rem); line-height: 1; margin: .3rem 0 .2rem }
 .zeugnis__punkte small {
   display: block;
-  font-family: var(--schrift-text);
-  font-size: .68rem;
+  font-family: var(--textschrift);
+  font-size: .66rem;
   letter-spacing: .3em;
   text-transform: uppercase;
-  color: #7a6e60;
+  color: var(--grau);
 }
-.zeugnis__vermerk {
-  font-size: .9rem;
-  line-height: 1.7;
-  color: #4c4238;
-  max-width: 48ch;
-  margin: .8rem auto 1.6rem;
-}
+.zeugnis__vermerk { font-size: .9rem; line-height: 1.7; color: var(--tinte-matt); max-width: 48ch; margin: .8rem auto 0 }
 
-.protokoll { list-style: none; margin: 0 0 1.4rem; padding: 0; text-align: left }
+.protokoll { list-style: none; margin: 0; padding: 0; text-align: left }
 .protokoll__zeile {
   display: grid;
   grid-template-columns: 1.4rem 1fr auto;
@@ -817,24 +1031,13 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   padding: .5rem .2rem;
   border-bottom: 1px dotted rgba(36,31,28,.3);
 }
-.protokoll__nr { grid-area: nr; font-family: var(--schrift-titel); color: #7a6e60; font-size: .8rem }
-.protokoll__schrift { grid-area: schrift; font-size: 1.12rem; line-height: 1.25 }
-.protokoll__stufe { grid-area: stufe; font-size: .72rem; color: #7a6e60 }
-.protokoll__punkte {
-  grid-area: punkte;
-  font-family: var(--schrift-titel);
-  font-size: 1rem;
-  align-self: center;
-}
-.protokoll__zeile--daneben .protokoll__punkte { color: var(--band-rot) }
+.protokoll__nr { grid-area: nr; font-family: var(--titelschrift); color: var(--grau); font-size: .8rem }
+.protokoll__schrift { grid-area: schrift; font-size: 1.1rem; line-height: 1.25 }
+.protokoll__stufe { grid-area: stufe; font-size: .72rem; color: var(--grau) }
+.protokoll__punkte { grid-area: punkte; font-family: var(--titelschrift); font-size: 1rem; align-self: center }
+.protokoll__zeile--daneben .protokoll__punkte { color: var(--rot) }
 
-.orden {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .5rem;
-  justify-content: center;
-  margin-bottom: 1.5rem;
-}
+.orden { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center }
 .orden__stueck {
   display: block;
   padding: .45rem .8rem;
@@ -844,40 +1047,18 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   text-align: center;
   max-width: 220px;
 }
-.orden__stueck b {
-  display: block;
-  font-family: var(--schrift-titel);
-  font-weight: 400;
-  font-size: .92rem;
-  color: #6c5510;
-}
-.orden__stueck small { font-size: .68rem; color: #6d6154; line-height: 1.4; display: block }
-.orden__leer { font-size: .8rem; color: #7a6e60 }
+.orden__stueck b { display: block; font-family: var(--titelschrift); font-weight: 400; font-size: .9rem; color: #6c5510 }
+.orden__stueck small { display: block; font-size: .68rem; color: var(--grau); line-height: 1.4 }
+.orden__leer { font-size: .8rem; color: var(--grau) }
 
-.zeugnis__knoepfe {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .7rem;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: .8rem;
-}
-.zeugnis__knoepfe .metallknopf { color: var(--papier) }
-#bestwert-ende { color: #6d6154 }
+/* ══════════════ Fußleiste ══════════════ */
 
-/* ══════════════ Werkbank (Fuß) ══════════════ */
-
-.werkbank {
+.fussleiste {
   text-align: center;
-  padding: 1.4rem 1rem 2.2rem;
-  font-size: .72rem;
+  padding: 1.2rem 1rem 2rem;
+  font-size: .7rem;
   color: var(--tinte-blass);
-  display: flex;
-  flex-wrap: wrap;
-  gap: .4rem;
-  justify-content: center;
 }
-.werkbank__trenner { opacity: .5 }
 
 /* ══════════════ Kleine Bildschirme ══════════════ */
 
@@ -885,31 +1066,25 @@ main { padding: clamp(1rem, 3vw, 2.4rem) clamp(.7rem, 3vw, 2rem) 3rem; }
   .tastatur,
   .tastatur[data-spalten="3"],
   .tastatur[data-spalten="4"] { grid-template-columns: repeat(2, 1fr) }
-  .taste__kappe { min-height: 56px; flex-direction: column; gap: .2rem }
+  .taste__kappe { min-height: 54px; flex-direction: column; gap: .2rem }
   .taste__ziffer { width: 18px; height: 18px; font-size: .62rem }
 
-  .maschine__leiste {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: .35rem;
-  }
+  .maschine__leiste { display: grid; grid-template-columns: repeat(3, 1fr); gap: .35rem }
+  .hud--training { grid-template-columns: repeat(2, 1fr) }
   .anzeige { min-width: 0; padding: .35rem .3rem }
-  .anzeige__schild { font-size: .5rem; letter-spacing: .1em }
+  .anzeige__schild { font-size: .5rem; letter-spacing: .08em }
   .anzeige__wert { font-size: 1rem }
 
-  .firmenschild { padding: .6rem .8rem }
-  .marke__zusatz { font-size: .56rem; letter-spacing: .1em }
-  .metallknopf { padding: .4rem .7rem; font-size: .72rem }
+  .kopfleiste { padding: .55rem .7rem; flex-wrap: nowrap }
+  .marke__zusatz { font-size: .55rem }
+  .metallknopf { padding: .45rem .6rem; font-size: .85rem }
+  /* Auf schmalen Geräten reichen die Symbole — sonst bricht die
+     Kopfleiste um und frisst den halben Bildschirm. */
+  .knopf__text { display: none }
 
-  .probe { height: clamp(160px, 28vh, 220px) }
-  .hebel { padding: .6rem .8rem }
+  .probe { height: clamp(160px, 26vh, 220px) }
   .walzenknauf { width: 20px; height: 20px }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .001ms !important;
-  }
+  .katalog__kopf { flex-direction: column; gap: .2rem }
+  .katalog__namen { text-align: left }
+  .aufloesung__vorspann { padding-right: 4.5rem }
 }

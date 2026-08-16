@@ -152,7 +152,7 @@ const Walze = (() => {
         if (lauf !== laufendeAnimation) return resolve();
         i++;
         zeichne(probe, i, i < text.length);
-        if (ton && text[i - 1] !== ' ') Werkstattgeraeusche.anschlag();
+        if (ton && text[i - 1] !== ' ') Sfx.anschlag();
         if (i < text.length) {
           const pause = tempo * (0.7 + Math.random() * 0.7) + (/[.,;:!?]/.test(text[i - 1]) ? tempo * 3 : 0);
           setTimeout(einZeichen, pause);
