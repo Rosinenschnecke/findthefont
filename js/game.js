@@ -44,31 +44,43 @@
     }
   };
 
-  /* ---------------- Tipps ---------------- */
+  /* ---------------- Tipps ----------------
+
+     Ein Tipp verrät nichts über die gesuchte Schrift, sondern
+     beschriftet die Antwortmöglichkeiten mit einer Eigenschaft.
+     Vergleichen muss man selbst: Hat die Probe Serifen? Dann
+     fallen alle Antworten weg, an denen „Grotesk“ steht.
+     ------------------------------------------------------------ */
 
   const TIPPS = [
     {
-      id: 'gattung', name: 'Gattung', kosten: 60,
-      text: f => `Gattung: ${CATEGORY_LABELS[f.cat]}${GATTUNG_ERKLAERUNG[f.cat] ? ' — ' + GATTUNG_ERKLAERUNG[f.cat] : ''}`
+      id: 'gattung', kosten: 60,
+      meldung: 'Gattung auf den Antworten',
+      erklaerung: 'Schreibt die Gattung auf jede Antwort — Antiqua, Grotesk, Schreibmaschine und so weiter.',
+      schild: f => CATEGORY_LABELS[f.cat]
     },
     {
-      id: 'herkunft', name: 'Herkunft', kosten: 110,
-      text: f => `Entworfen von ${f.m}.`
+      id: 'jahr', kosten: 120,
+      meldung: 'Entstehungsjahr auf den Antworten',
+      erklaerung: 'Schreibt das Entstehungsjahr auf jede Antwort. Alte und neue Schriften sehen verschieden aus.',
+      schild: f => jahrVon(f)
     },
     {
-      id: 'buchstabe', name: 'Anfangsbuchstabe', kosten: 150,
-      text: f => `Der Name beginnt mit „${f.n[0]}“.`
+      id: 'streichen', kosten: 180,
+      meldung: 'eine falsche Antwort gestrichen',
+      erklaerung: 'Streicht eine falsche Antwort durch — ohne Punktabzug für einen Fehlgriff.',
+      schild: null
     }
   ];
 
-  const GATTUNG_ERKLAERUNG = {
-    sans:    'ohne Serifen',
-    serif:   'mit Serifen',
-    slab:    'mit betont rechteckigen Serifen',
-    mono:    'alle Zeichen gleich breit',
-    display: 'für große Überschriften gemacht',
-    script:  'wirkt wie mit der Hand geschrieben'
-  };
+  /** Zieht das Entstehungsjahr aus der Herkunftsangabe. */
+  function jahrVon(f) {
+    const jahr = f.m.match(/\b(1[0-9]{3}|20[0-9]{2})\b/);
+    if (jahr) return jahr[1];
+    const jh = f.m.match(/(\d{1,2})\.\s*Jh/);
+    if (jh) return jh[1] + '. Jh.';
+    return 'Jahr unbekannt';
+  }
 
   const RUNDEN_JE_SPIEL = 5;
   const FEHLERKOSTEN = 120;
@@ -260,16 +272,8 @@
         <span class="stufenliste__wert">${s.wert} Punkte</span>
       </li>`).join('');
 
-    $('anleitung-tipps').innerHTML = TIPPS.map(t =>
-      `<li><strong>${t.name}</strong> — ${t.kosten} Punkte. ${tippBeispiel(t.id)}</li>`).join('');
-  }
-
-  function tippBeispiel(id) {
-    return {
-      gattung:   'Verrät, ob die Schrift Serifen hat, gleich breit läuft und so weiter.',
-      herkunft:  'Nennt die Person und das Jahr, aus dem die Schrift stammt.',
-      buchstabe: 'Nennt den ersten Buchstaben des Schriftnamens.'
-    }[id];
+    $('anleitung-tipps').innerHTML = TIPPS.map((t, i) =>
+      `<li><strong>${i + 1}. Tipp — ${t.kosten} Punkte:</strong> ${t.erklaerung}</li>`).join('');
   }
 
   /* ---------------- Trainingslager ---------------- */
@@ -409,7 +413,9 @@
       optionen: gegenspieler(ziel, anzahl, pool, gleicheGattung),
       stufe: 0,
       fehler: [],
+      gestrichen: [],
       tippkosten: 0,
+      tippStufe: 0,
       genutzteTipps: [],
       proben: STUFEN.map(s => s.probe()),
       beendet: false
@@ -433,7 +439,7 @@
 
     baueTastatur();
     baueStufenleiste();
-    baueTippreihe();
+    zeigeTippbox();
     Walze.leere();
     zeigeStufe(true);
     starteUhr();
@@ -444,7 +450,8 @@
   function starteUhr() {
     stoppeUhr();
     const sekunden = spiel.modus === 'training' ? 0 : SCHWIERIGKEIT[spiel.stufe].zeit;
-    $('zeitleiste').hidden = !sekunden;
+    $('zeitband').hidden = !sekunden;
+    $('blatt-zeit').hidden = !sekunden;
     if (!sekunden) return;
 
     spiel.restzeit = sekunden;
@@ -466,16 +473,24 @@
     }, 100);
   }
 
+  /**
+   * Die Zeit wird nicht in einem eigenen Balken gezeigt, sondern
+   * hinter der Stufenleiste: Der eingefärbte Teil der gestrichelten
+   * Linie schrumpft, bis nichts mehr übrig ist.
+   */
   function zeichneUhr(rest, gesamt) {
     const anteil = Math.max(0, rest / gesamt);
-    $('zeitbalken').style.width = (anteil * 100) + '%';
-    $('zeitbalken').classList.toggle('zeitleiste__balken--knapp', anteil < 0.25);
-    $('zeitzahl').textContent = Math.max(0, Math.ceil(rest));
+    $('zeitband').style.width = (anteil * 100) + '%';
+    $('zeitband').classList.toggle('zeitband--knapp', anteil < 0.25);
+    $('blatt-zeit').textContent = Math.max(0, Math.ceil(rest)) + ' s';
+    $('blatt-zeit').classList.toggle('blatt__zeit--knapp', anteil < 0.25);
   }
 
   function stoppeUhr() {
     clearInterval(spiel.uhr);
     spiel.uhr = null;
+    $('zeitband').classList.remove('zeitband--knapp');
+    $('blatt-zeit').classList.remove('blatt__zeit--knapp');
   }
 
   /* ---------------- Anzeige der Stufe ---------------- */
@@ -536,7 +551,10 @@
       <button type="button" class="taste" data-i="${i}">
         <span class="taste__kappe">
           <span class="taste__ziffer">${i + 1}</span>
-          <span class="taste__name">${f.n}</span>
+          <span class="taste__mitte">
+            <span class="taste__name">${f.n}</span>
+            <span class="taste__schild" hidden></span>
+          </span>
         </span>
       </button>`).join('');
     t.querySelectorAll('.taste').forEach(b => {
@@ -547,39 +565,74 @@
 
   /* ---------------- Tipps ---------------- */
 
-  function baueTippreihe() {
-    const training = spiel.modus === 'training';
-    $('tippreihe').innerHTML = TIPPS.map(t => `
-      <button type="button" class="tippknopf" data-tipp="${t.id}">
-        <span class="tippknopf__name">${t.name}</span>
-        <span class="tippknopf__preis">${training ? 'kostenlos' : '−' + t.kosten}</span>
-      </button>`).join('');
+  /** Beschriftet die Antwortkästen mit allen bereits gekauften Merkmalen. */
+  function aktualisiereTastenschilder() {
+    const r = spiel.runde;
+    const offen = TIPPS.slice(0, r.tippStufe).filter(t => t.schild);
 
-    $('tippreihe').querySelectorAll('.tippknopf').forEach(k => {
-      k.addEventListener('click', () => kaufeTipp(k.dataset.tipp));
+    r.optionen.forEach((f, i) => {
+      const el = $('tastatur').querySelector(`.taste[data-i="${i}"] .taste__schild`);
+      if (!el) return;
+      const teile = offen.map(t => t.schild(f));
+      el.textContent = teile.join(' · ');
+      el.hidden = !teile.length;
     });
   }
 
-  function kaufeTipp(id) {
+  /** Aufschrift der Tippbox: nur der Preis des nächsten Tipps. */
+  function zeigeTippbox() {
     const r = spiel.runde;
-    if (!r || r.beendet || r.genutzteTipps.includes(id)) return;
-    const tipp = TIPPS.find(t => t.id === id);
+    const knopf = $('tipp-knopf');
+    const naechster = TIPPS[r.tippStufe];
 
-    r.genutzteTipps.push(id);
+    if (!naechster || r.beendet) {
+      knopf.disabled = true;
+      $('tipp-preis').textContent = r.beendet ? '—' : 'keine Tipps mehr';
+      return;
+    }
+    knopf.disabled = false;
+    $('tipp-preis').textContent = spiel.modus === 'training'
+      ? 'kostenlos'
+      : `−${naechster.kosten} Punkte`;
+  }
+
+  function kaufeTipp() {
+    const r = spiel.runde;
+    if (!r || r.beendet) return;
+    const tipp = TIPPS[r.tippStufe];
+    if (!tipp) return;
+
+    r.tippStufe++;
+    r.genutzteTipps.push(tipp.id);
     if (spiel.modus !== 'training') r.tippkosten += tipp.kosten;
     Sfx.tipp();
 
-    const knopf = $('tippreihe').querySelector(`[data-tipp="${id}"]`);
-    knopf.disabled = true;
-    knopf.classList.add('tippknopf--genutzt');
+    if (tipp.id === 'streichen') streicheFalscheAntwort();
+    aktualisiereTastenschilder();
 
     const zeile = document.createElement('span');
     zeile.className = 'tippausgabe__zeile';
-    zeile.textContent = tipp.text(r.schrift);
+    zeile.textContent = tipp.meldung;
     $('tippausgabe').appendChild(zeile);
     $('tippausgabe').hidden = false;
 
+    zeigeTippbox();
     zeigeStufe(false);
+  }
+
+  /** Streicht eine noch offene falsche Antwort — ohne Fehlgriff-Abzug. */
+  function streicheFalscheAntwort() {
+    const r = spiel.runde;
+    const offen = r.optionen.filter(f =>
+      f !== r.schrift && !r.fehler.includes(f) && !r.gestrichen.includes(f));
+    if (!offen.length) return;
+
+    const opfer = waehle(offen);
+    r.gestrichen.push(opfer);
+
+    const taste = $('tastatur').querySelector(`.taste[data-i="${r.optionen.indexOf(opfer)}"]`);
+    taste.disabled = true;
+    taste.classList.add('taste--gestrichen');
   }
 
   /* ---------------- Spielzüge ---------------- */
@@ -647,7 +700,7 @@
     $('aufdecken-knopf').disabled = true;
     $('loesung-knopf').disabled = true;
     $('tastatur').querySelectorAll('.taste').forEach(b => { b.disabled = true; });
-    $('tippreihe').querySelectorAll('.tippknopf').forEach(b => { b.disabled = true; });
+    $('tipp-knopf').disabled = true;
 
     const training = spiel.modus === 'training';
     const punkte = (richtig && !training) ? rundenpunkte() : 0;
@@ -938,6 +991,7 @@
 
     /* Spiel */
     $('aufdecken-knopf').addEventListener('click', aufdecken);
+    $('tipp-knopf').addEventListener('click', kaufeTipp);
     $('loesung-knopf').addEventListener('click', loesungZeigen);
     $('weiter-knopf').addEventListener('click', weiter);
     $('training-ende-knopf').addEventListener('click', () => {

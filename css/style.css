@@ -610,34 +610,18 @@ kbd {
 /* Im Training gibt es keine Punkte — die dritte Anzeige entfällt. */
 .hud--training .anzeige--wert { display: none }
 
-/* Zeitleiste */
-.zeitleiste {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  margin-bottom: .7rem;
-  padding: .35rem .6rem;
-  border-radius: 3px;
-  background: rgba(0,0,0,.45);
-  border: 1px solid rgba(0,0,0,.7);
-}
-.zeitleiste__balken {
-  height: 8px;
-  flex: 1;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--messing), #e0c04a);
-  transition: width .12s linear, background .3s;
-}
-.zeitleiste__balken--knapp { background: linear-gradient(90deg, var(--rot), var(--rot-hell)); animation: pulsieren .8s infinite }
-@keyframes pulsieren { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
-.zeitleiste__zahl {
+/* Restzeit als Zahl im Blattkopf — der Balken dazu liegt unten
+   hinter der Stufenleiste. */
+.blatt__zeit {
   font-family: var(--titelschrift);
-  font-size: .95rem;
-  color: var(--papier);
-  min-width: 2.2ch;
-  text-align: right;
+  font-size: .82rem;
+  letter-spacing: .06em;
+  text-transform: none;          /* sonst stünde dort „56 S“ */
+  color: var(--messing-tief);
   font-variant-numeric: tabular-nums;
 }
+.blatt__zeit--knapp { color: var(--rot); animation: pulsieren .8s infinite }
+@keyframes pulsieren { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
 
 /* Walze */
 .walzenbalken { display: flex; align-items: center; gap: .4rem; margin: 0 .2rem -6px; position: relative; z-index: 3 }
@@ -700,8 +684,39 @@ kbd {
 
 .blatt__fuss { border-top: 1px solid rgba(36,31,28,.16); padding-top: .5rem }
 
+.stufenzeile { position: relative }
+
+/* Die Zeit läuft hinter der gestrichelten Stufenleiste ab: Das
+   eingefärbte Stück wird kürzer, bis es ganz verschwunden ist.
+   Die Kerben sind durchscheinend, damit das Band durchkommt. */
+.zeitband {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 7px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(201,162,39,.85), rgba(224,192,74,.6));
+  box-shadow: 0 0 8px rgba(201,162,39,.35);
+  transition: width .12s linear, background .4s;
+  pointer-events: none;
+  z-index: 0;
+}
+.zeitband--knapp {
+  background: linear-gradient(90deg, rgba(176,54,43,.9), rgba(208,80,63,.7));
+  box-shadow: 0 0 10px rgba(176,54,43,.5);
+  animation: pulsieren .8s infinite;
+}
+
 .stufenleiste { list-style: none; display: flex; justify-content: space-between; gap: .3rem; margin: 0; padding: 0 }
-.kerbe { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .25rem }
+.kerbe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  position: relative;
+  z-index: 1;
+}
 .kerbe__marke {
   width: 100%;
   height: 7px;
@@ -740,25 +755,29 @@ kbd {
 .werkzeug__titel { display: block; font-family: var(--titelschrift); font-size: 1rem; letter-spacing: .03em }
 .werkzeug__preis { display: block; color: var(--tinte-blass); font-size: .72rem; margin-top: .1rem }
 
-/* Tipps */
-.tippreihe { display: flex; gap: .5rem; flex-wrap: wrap }
-.tippknopf {
-  flex: 1 1 120px;
+/* Tipps: eine einzige Box, die nacheinander Merkmale aufdeckt.
+   Auf der Box steht nur, was der nächste Tipp kostet. */
+.tippbox {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .8rem;
+  width: 100%;
   cursor: pointer;
-  padding: .5rem .7rem;
-  border-radius: 6px;
-  border: 1px solid rgba(201,162,39,.45);
-  background: linear-gradient(180deg, rgba(201,162,39,.18), rgba(201,162,39,.05));
+  padding: .6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(201,162,39,.5);
+  background: linear-gradient(180deg, rgba(201,162,39,.2), rgba(201,162,39,.06));
   color: var(--papier);
   font-family: var(--textschrift);
+  text-align: left;
   transition: filter .15s, transform .1s;
 }
-.tippknopf:hover:not(:disabled) { filter: brightness(1.25) }
-.tippknopf:active:not(:disabled) { transform: translateY(2px) }
-.tippknopf:disabled { opacity: .4; cursor: not-allowed }
-.tippknopf--genutzt { opacity: .35 }
-.tippknopf__name { display: block; font-family: var(--titelschrift); font-size: .9rem }
-.tippknopf__preis { display: block; font-size: .7rem; color: var(--messing) }
+.tippbox:hover:not(:disabled) { filter: brightness(1.25) }
+.tippbox:active:not(:disabled) { transform: translateY(2px) }
+.tippbox:disabled { opacity: .4; cursor: not-allowed }
+.tippbox__titel { font-family: var(--titelschrift); font-size: 1rem; letter-spacing: .03em }
+.tippbox__preis { font-family: var(--titelschrift); font-size: .9rem; color: var(--messing) }
 
 .tippausgabe {
   margin: 0;
@@ -770,8 +789,12 @@ kbd {
   line-height: 1.6;
   color: var(--papier);
 }
-.tippausgabe__zeile { display: block }
-.tippausgabe__zeile + .tippausgabe__zeile { margin-top: .3rem }
+/* Die Meldungen reihen sich in einer Zeile aneinander, statt den
+   halben Bildschirm zu belegen. */
+.tippausgabe__zeile + .tippausgabe__zeile::before {
+  content: ' · ';
+  color: var(--messing);
+}
 
 /* Antworttasten */
 .tastatur { display: grid; gap: .6rem; grid-template-columns: repeat(2, 1fr) }
@@ -814,7 +837,28 @@ kbd {
   background: linear-gradient(180deg, #e0d3b4, #b3a586);
   box-shadow: inset 0 -1px 2px rgba(0,0,0,.4);
 }
+.taste__mitte { display: flex; flex-direction: column; align-items: center; gap: .15rem; min-width: 0 }
 .taste__name { font-family: var(--titelschrift); font-size: clamp(.78rem, 2vw, .95rem); line-height: 1.25 }
+
+/* Von Tipps aufgedeckte Merkmale der jeweiligen Antwort. */
+.taste__schild {
+  font-size: .66rem;
+  letter-spacing: .06em;
+  color: var(--messing);
+  padding: .05rem .45rem;
+  border: 1px solid rgba(201,162,39,.4);
+  border-radius: 999px;
+  background: rgba(201,162,39,.12);
+  white-space: nowrap;
+}
+
+/* Vom Tipp gestrichene Antwort — kein Fehlgriff, nur weggeräumt. */
+.taste--gestrichen .taste__kappe {
+  opacity: .4;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6), 0 1px 0 #14110e;
+  transform: translateY(4px);
+}
+.taste--gestrichen .taste__name { text-decoration: line-through; text-decoration-thickness: 2px }
 
 .taste--treffer .taste__kappe {
   background: linear-gradient(180deg, #4d7a3f, #2f5127);

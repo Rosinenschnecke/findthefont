@@ -143,8 +143,11 @@
 
       <h2 class="abschnittstitel">Tipps kaufen</h2>
       <p class="fliesstext">
-        Wenn du nicht weiterkommst, kannst du dir Hinweise zur gesuchten Schrift
-        kaufen. Jeder Tipp zieht Punkte von der laufenden Runde ab:
+        Ein Tipp verrät nicht, welche Schrift gesucht ist — er schreibt eine
+        Eigenschaft auf <em>jede</em> Antwortmöglichkeit. Vergleichen musst du
+        selbst: Hat die Probe Serifen, fallen alle Antworten weg, an denen
+        „Grotesk“ steht. Die Tippbox deckt nacheinander auf, jeder Schritt
+        kostet Punkte von der laufenden Runde:
       </p>
       <ul class="fliessliste" id="anleitung-tipps"></ul>
 
@@ -246,11 +249,6 @@
         </div>
       </div>
 
-      <div class="zeitleiste" id="zeitleiste" hidden>
-        <div class="zeitleiste__balken" id="zeitbalken"></div>
-        <span class="zeitleiste__zahl" id="zeitzahl">60</span>
-      </div>
-
       <div class="walzenbalken" aria-hidden="true">
         <span class="walzenknauf walzenknauf--links"></span>
         <span class="walzenbalken__riffel"></span>
@@ -261,11 +259,15 @@
         <div class="blatt__lochung" aria-hidden="true"></div>
         <div class="blatt__kopf">
           <span id="blatt-kopf-links">Runde 1</span>
+          <span class="blatt__zeit" id="blatt-zeit" hidden>60 s</span>
           <span id="blatt-kopf-rechts">Stufe 1 von 7 — Punkt</span>
         </div>
         <canvas id="probe" class="probe" aria-label="Schriftprobe"></canvas>
         <div class="blatt__fuss">
-          <ol class="stufenleiste" id="stufenleiste"></ol>
+          <div class="stufenzeile">
+            <span class="zeitband" id="zeitband" hidden></span>
+            <ol class="stufenleiste" id="stufenleiste"></ol>
+          </div>
         </div>
       </div>
 
@@ -281,7 +283,10 @@
           </button>
         </div>
 
-        <div class="tippreihe" id="tippreihe"></div>
+        <button id="tipp-knopf" class="tippbox" type="button">
+          <span class="tippbox__titel">Tipp</span>
+          <span class="tippbox__preis" id="tipp-preis">−60 Punkte</span>
+        </button>
         <p class="tippausgabe" id="tippausgabe" hidden></p>
 
         <div class="tastatur" id="tastatur" role="group" aria-label="Antwortmöglichkeiten"></div>
