@@ -28,8 +28,8 @@
   /* fehlversuche: so viele falsche Antworten sind erlaubt; die
      nächste beendet die Runde. Damit lässt sich nicht einfach
      jede Antwort durchprobieren.
-     nachruecken: nach jedem Fehlgriff kommt eine weitere Antwort
-     hinzu, damit die Auswahl nicht kleiner wird. */
+     nachruecken: die falsch geratene Antwort wird durch eine neue
+     ersetzt, damit die Auswahl nicht kleiner wird. */
   const SCHWIERIGKEIT = {
     leicht: {
       name: 'Leicht', optionen: 4, zeit: 0, faktor: 1.0,
@@ -573,19 +573,20 @@
     }
     zeigeVersuche();
 
-    /* Aus: entweder sind die Fehlversuche aufgebraucht oder es
-       bliebe ohnehin nur noch eine Antwort übrig. */
-    if (r.fehler.length > erlaubteFehler() ||
-        r.optionen.length - r.fehler.length <= 1) {
+    const ersetzen = spiel.modus !== 'training' && SCHWIERIGKEIT[spiel.stufe].nachruecken;
+
+    /* Wird die falsche Antwort ersetzt, bleiben alle Felder wählbar —
+       sonst zählt jede ausgestrichene Antwort als weggefallen. */
+    const gesperrt = ersetzen ? 0 : r.fehler.length;
+
+    if (r.fehler.length > erlaubteFehler() || r.optionen.length - gesperrt <= 1) {
       beendeRunde(false, gewaehlt);
       return;
     }
 
-    /* Ab „Schwer“ rückt eine neue Antwort nach, damit sich der
-       Kreis der Möglichkeiten nicht mit jedem Fehlgriff verengt. */
-    if (spiel.modus !== 'training' && SCHWIERIGKEIT[spiel.stufe].nachruecken) {
-      ruecheNach();
-    }
+    /* Ab „Schwer“ tritt an die Stelle der falschen Antwort eine neue
+       Schrift, damit sich die Auswahl nicht mit jedem Fehlgriff verengt. */
+    if (ersetzen) setTimeout(() => ersetzeAntwort(index), 650);
 
     if (r.stufe < STUFEN.length - 1) {
       r.stufe++;
@@ -595,30 +596,33 @@
     }
   }
 
-  /** Hängt eine weitere falsche Antwort an die Tastatur an. */
-  function ruecheNach() {
+  /** Tauscht die falsch geratene Antwort gegen eine neue aus. */
+  function ersetzeAntwort(index) {
     const r = spiel.runde;
-    const pool = auswahlFuerSpiel().filter(f =>
-      f !== r.schrift && !r.optionen.includes(f) &&
-      (!SCHWIERIGKEIT[spiel.stufe].gleicheGattung || f.cat === r.schrift.cat));
-    if (!pool.length) return;
+    if (!r || r.beendet) return;
+
+    const frei = auswahlFuerSpiel().filter(f =>
+      f !== r.schrift && !r.optionen.includes(f) && !r.fehler.includes(f));
+
+    /* Bevorzugt eine Schrift derselben Gattung. Ist der Vorrat
+       erschöpft — bei kleinen Gattungen schnell der Fall —, tut es
+       auch eine andere; ein leeres Feld wäre schlechter. */
+    const gleicheGattung = frei.filter(f => f.cat === r.schrift.cat);
+    const pool = (SCHWIERIGKEIT[spiel.stufe].gleicheGattung && gleicheGattung.length)
+      ? gleicheGattung
+      : frei;
+    if (!pool.length) return;          // nichts mehr da: Feld bleibt gestrichen
 
     const neue = waehle(pool);
-    r.optionen.push(neue);
+    r.optionen[index] = neue;
 
-    const knopf = document.createElement('button');
-    knopf.type = 'button';
-    knopf.className = 'taste taste--neu';
-    knopf.dataset.i = String(r.optionen.length - 1);
-    knopf.innerHTML =
-      `<span class="taste__kappe">` +
-      `<span class="taste__ziffer">${r.optionen.length}</span>` +
-      `<span class="taste__name">${neue.n}</span></span>`;
-    knopf.addEventListener('click', () => antworte(parseInt(knopf.dataset.i, 10)));
-    $('tastatur').appendChild(knopf);
-
-    const t = $('tastatur');
-    t.dataset.spalten = r.optionen.length > 6 ? '4' : (r.optionen.length > 4 ? '3' : '2');
+    const taste = $('tastatur').querySelector(`.taste[data-i="${index}"]`);
+    if (!taste) return;
+    taste.classList.remove('taste--verklemmt');
+    taste.classList.add('taste--neu');
+    taste.disabled = false;
+    taste.querySelector('.taste__name').textContent = neue.n;
+    setTimeout(() => taste.classList.remove('taste--neu'), 500);
   }
 
   function loesungZeigen() {

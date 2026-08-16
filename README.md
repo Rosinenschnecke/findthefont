@@ -54,8 +54,8 @@ statische Webspace.
   deckt automatisch eine Stufe mehr auf.
 * Die **Versuche pro Runde sind begrenzt** — durchprobieren führt nicht zum
   Ziel. Sind sie aufgebraucht, endet die Runde ohne Punkte.
-* Ab „Schwer“ **rückt nach jedem Fehlgriff eine neue Antwort nach**, damit sich
-  die Auswahl nicht mit jedem Versuch verengt.
+* Ab „Schwer“ **wird die falsche Antwort durch eine neue ersetzt** — die Zahl
+  der Felder bleibt gleich, die Auswahl verengt sich also nicht.
 
 Die **Zeit** läuft nicht in einem eigenen Balken, sondern auf der Walze der
 Maschine: Das Leuchten darauf wird kürzer, bis es verschwunden ist.
@@ -66,8 +66,8 @@ Maschine: Das Leuchten darauf wird kürzer, bis es verschwunden ist.
 |------|----------:|---------:|-----------|-----:|-------:|
 | Leicht | 4 | 2 | nur sehr bekannte | — | ×1,0 |
 | Mittel | 5 | 2 | bekannte | 60 s | ×1,4 |
-| Schwer | 6 | 3 + Nachrücker | alle, gleiche Gattung | 40 s | ×1,9 |
-| Experte | 8 | 3 + Nachrücker | alle, gleiche Gattung | 25 s | ×2,5 |
+| Schwer | 6 | 3, Felder werden ersetzt | alle, gleiche Gattung | 40 s | ×1,9 |
+| Experte | 8 | 3, Felder werden ersetzt | alle, gleiche Gattung | 25 s | ×2,5 |
 
 Wie bekannt eine Schrift ist, steht in `js/fonts.js` unter `BEKANNTHEIT`.
 

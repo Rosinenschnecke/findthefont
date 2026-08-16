@@ -844,7 +844,7 @@ kbd {
 }
 .taste__name { font-family: var(--titelschrift); font-size: clamp(.78rem, 2vw, .95rem); line-height: 1.25 }
 
-/* Nachgerückte Antwort — kommt nach einem Fehlgriff dazu. */
+/* Ausgetauschte Antwort — tritt an die Stelle der falschen. */
 .taste--neu .taste__kappe { animation: dazugekommen .45s ease both }
 @keyframes dazugekommen {
   from { transform: scale(.9); opacity: 0 }
