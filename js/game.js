@@ -46,8 +46,17 @@
     experte: {
       name: 'Experte', optionen: 8, zeit: 25, faktor: 2.5,
       bekanntheit: 3, gleicheGattung: true, fehlversuche: 2, nachruecken: true
+    },
+    /* Für alle gleich, deshalb feste Regeln und nicht in der
+       Schwierigkeitswahl aufgeführt. */
+    taeglich: {
+      name: 'Schrift des Tages', optionen: 5, zeit: 45, faktor: 1.0,
+      bekanntheit: 2, gleicheGattung: false, fehlversuche: 1, nachruecken: false,
+      versteckt: true
     }
   };
+
+  const WAEHLBAR = Object.entries(SCHWIERIGKEIT).filter(([, s]) => !s.versteckt);
 
   const RUNDEN_JE_SPIEL = 5;
   const FEHLERKOSTEN = 120;
@@ -91,13 +100,18 @@
   /* ---------------- Helfer ---------------- */
 
   const $ = id => document.getElementById(id);
-  const waehle = arr => arr[Math.floor(Math.random() * arr.length)];
   const zahl = n => n.toLocaleString('de-DE');
+
+  /* Im Tagesmodus kommt der Zufall aus dem Datum, damit alle
+     dieselbe Aufgabe bekommen. Sonst der übliche Zufall. */
+  let wuerfel = Math.random;
+
+  const waehle = arr => arr[Math.floor(wuerfel() * arr.length)];
 
   function mische(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(wuerfel() * (i + 1));
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
@@ -169,6 +183,7 @@
     baueTrainingsfelder();
     baueKatalog();
     zeigeBestenliste();
+    zeigeTageskarte();
     setTimeout(() => zeigeSchirm('menue'), 300);
   }
 
@@ -178,7 +193,7 @@
   const holeBest = stufe => parseInt(localStorage.getItem(bestSchluessel(stufe)) || '0', 10);
 
   function zeigeBestenliste() {
-    $('bestenliste').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => {
+    $('bestenliste').innerHTML = WAEHLBAR.map(([key, s]) => {
       const b = holeBest(key);
       return `<li class="bestwerte__zeile">
         <span class="bestwerte__name">${s.name}</span>
@@ -190,7 +205,7 @@
   /* ---------------- Schwierigkeitswahl ---------------- */
 
   function baueStufenwahl() {
-    $('stufenwahl').innerHTML = Object.entries(SCHWIERIGKEIT).map(([key, s]) => `
+    $('stufenwahl').innerHTML = WAEHLBAR.map(([key, s]) => `
       <button type="button" class="stufenkarte${key === spiel.stufe ? ' stufenkarte--aktiv' : ''}" data-stufe="${key}">
         <span class="stufenkarte__name">${s.name}</span>
         <span class="stufenkarte__daten">
@@ -306,6 +321,7 @@
   /* ---------------- Spielstart ---------------- */
 
   function auswahlFuerSpiel() {
+    if (spiel.modus === 'taeglich') return Tagesspiel.pool();
     const s = SCHWIERIGKEIT[spiel.stufe];
     let pool = spiel.lager.filter(f => bekanntheitVon(f.n) <= s.bekanntheit);
     /* Zu wenige Schriften auf diesem Gerät? Dann den Kreis weiter ziehen,
@@ -321,6 +337,14 @@
     spiel.punkte = 0;
     spiel.protokoll = [];
     spiel.laeuft = true;
+
+    if (modus === 'taeglich') {
+      spiel.stufe = 'taeglich';
+      spiel.datum = Tagesspiel.heute();
+      wuerfel = Tagesspiel.wuerfel(spiel.datum);   // für alle dieselbe Folge
+    } else {
+      wuerfel = Math.random;
+    }
 
     $('hud').classList.toggle('hud--training', modus === 'training');
     $('loesung-knopf').hidden = modus !== 'training';
@@ -714,6 +738,7 @@
        ausdrücklich zu, sonst blockiert es die Bedienung. */
     $('aufloesung').hidden = true;
     if (spiel.modus !== 'training' && spiel.rundeNr >= RUNDEN_JE_SPIEL) {
+      if (spiel.modus === 'taeglich') sichereTagesergebnis();
       zeigeErgebnis();
     } else {
       Sfx.papier();
@@ -768,24 +793,193 @@
       ? orden.map(o => `<span class="orden__stueck" title="${o.text}">${o.name}</span>`).join('')
       : '';
 
-    const alt = holeBest(spiel.stufe);
-    if (spiel.punkte > alt) {
-      localStorage.setItem(bestSchluessel(spiel.stufe), String(spiel.punkte));
-      $('bestwert-ende').textContent = alt ? `Neuer Bestwert (vorher ${zahl(alt)})` : 'Neuer Bestwert';
+    const taeglich = spiel.modus === 'taeglich';
+    $('tagesauswertung').hidden = !taeglich;
+    $('stufe-wechseln-knopf').hidden = taeglich;
+    $('nochmal-knopf').hidden = taeglich;          // einmal am Tag
+    $('ende-modus').textContent = taeglich
+      ? `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`
+      : s.name;
+
+    if (taeglich) {
+      zeigeTagesauswertung();
+      $('bestwert-ende').textContent = '';
     } else {
-      $('bestwert-ende').textContent = `Bestwert: ${zahl(alt)}`;
+      const alt = holeBest(spiel.stufe);
+      if (spiel.punkte > alt) {
+        localStorage.setItem(bestSchluessel(spiel.stufe), String(spiel.punkte));
+        $('bestwert-ende').textContent = alt ? `Neuer Bestwert (vorher ${zahl(alt)})` : 'Neuer Bestwert';
+      } else {
+        $('bestwert-ende').textContent = `Bestwert: ${zahl(alt)}`;
+      }
     }
+
     zeigeBestenliste();
     zeigeStufenBestwert();
+    zeigeTageskarte();
+  }
+
+  /* ---------------- Schrift des Tages ---------------- */
+
+  /** Ergebnis des Tages festhalten — je Runde die erreichte Stufe. */
+  function sichereTagesergebnis() {
+    if (Tagesspiel.hole(spiel.datum)) return;      // schon gespeichert
+    Tagesspiel.speichere(spiel.datum, {
+      p: spiel.punkte,
+      s: spiel.protokoll.map(r => r.richtig ? r.stufe : -1),
+      n: spiel.protokoll.map(r => r.schrift.n)
+    });
+  }
+
+  /** Aufschrift der Menükarte: gespielt, offen, Serie. */
+  function zeigeTageskarte() {
+    const heute = Tagesspiel.hole(Tagesspiel.heute());
+    const serie = Tagesspiel.serie();
+    $('karte-taeglich-text').textContent = heute
+      ? `Heute gespielt: ${zahl(heute.p)} Punkte`
+      : 'Für alle dieselben fünf Schriften';
+    $('karte-taeglich-serie').textContent = serie.aktuell > 1
+      ? `${serie.aktuell} Tage in Folge`
+      : '';
+    $('karte-taeglich-serie').hidden = serie.aktuell <= 1;
+  }
+
+  let uhrBisMorgen = null;
+
+  function zeigeTagesauswertung() {
+    const serie = Tagesspiel.serie();
+    const alleTage = Object.keys(Tagesspiel.alle()).length;
+
+    $('serie-aktuell').textContent = serie.aktuell;
+    $('serie-laengste').textContent = serie.laengste;
+    $('serie-tage').textContent = alleTage;
+
+    /* Vergleich mit den eigenen bisherigen Tagen — mehr kann eine
+       Seite ohne Server nicht ehrlich behaupten. */
+    const rang = Tagesspiel.eigenerRang(spiel.punkte, spiel.datum);
+    $('prozentrang').textContent = rang
+      ? `Besser als ${Math.round(rang.anteil * 100)} % deiner bisherigen ` +
+        `${rang.tage} ${rang.tage === 1 ? 'Runde' : 'Runden'}`
+      : 'Dein erster Tag — ab morgen gibt es einen Vergleich.';
+
+    zeichnePunkteverteilung();
+    zeichneStufenverteilung();
+
+    clearInterval(uhrBisMorgen);
+    const tick = () => {
+      const rest = Tagesspiel.bisMorgen();
+      const st = Math.floor(rest / 3600000);
+      const mi = Math.floor(rest / 60000) % 60;
+      const se = Math.floor(rest / 1000) % 60;
+      $('naechster-tag').textContent =
+        `Nächste Schrift des Tages in ${st}:${String(mi).padStart(2, '0')}:${String(se).padStart(2, '0')}`;
+    };
+    tick();
+    uhrBisMorgen = setInterval(tick, 1000);
+  }
+
+  function zeichnePunkteverteilung() {
+    const klassen = Tagesspiel.punkteverteilung(500, RUNDEN_JE_SPIEL * STUFEN[0].wert);
+    const hoechste = Math.max(1, ...klassen.map(k => k.anzahl));
+    const meine = Math.min(klassen.length - 1, Math.floor(spiel.punkte / 500));
+
+    $('punkteverteilung').innerHTML = klassen.map((k, i) => `
+      <div class="saeule${i === meine ? ' saeule--meine' : ''}"
+           title="${zahl(k.von)}–${zahl(k.bis)} Punkte: ${k.anzahl}×">
+        <span class="saeule__zahl">${k.anzahl || ''}</span>
+        <span class="saeule__balken" style="height:${Math.max(3, k.anzahl / hoechste * 100)}%"></span>
+        <span class="saeule__schild">${k.von / 1000 === Math.floor(k.von / 1000) ? k.von / 1000 + 'k' : ''}</span>
+      </div>`).join('');
+  }
+
+  function zeichneStufenverteilung() {
+    const zaehler = Tagesspiel.stufenverteilung(STUFEN.length);
+    const hoechste = Math.max(1, ...zaehler);
+
+    $('stufenverteilung').innerHTML = zaehler.map((anzahl, i) => {
+      const letzte = i === STUFEN.length;
+      return `<div class="saeule${letzte ? ' saeule--daneben' : ''}"
+           title="${letzte ? 'nicht erkannt' : 'Stufe ' + (i + 1)}: ${anzahl}×">
+        <span class="saeule__zahl">${anzahl || ''}</span>
+        <span class="saeule__balken" style="height:${Math.max(3, anzahl / hoechste * 100)}%"></span>
+        <span class="saeule__schild">${letzte ? '✗' : i + 1}</span>
+      </div>`;
+    }).join('');
+  }
+
+  /** Klick auf die Tageskarte: spielen oder das Ergebnis zeigen. */
+  function starteTagesspiel() {
+    const datum = Tagesspiel.heute();
+    const fertig = Tagesspiel.hole(datum);
+    Sfx.taste();
+
+    if (!fertig) { starteSpiel('taeglich'); return; }
+
+    /* Schon gespielt — die Auswertung noch einmal zeigen. */
+    spiel.modus = 'taeglich';
+    spiel.stufe = 'taeglich';
+    spiel.datum = datum;
+    spiel.punkte = fertig.p;
+    spiel.laeuft = false;
+    spiel.protokoll = [];
+    zeigeErgebnisNurAuswertung(fertig);
+  }
+
+  /** Ergebnisschirm ohne frisch gespielte Runden. */
+  function zeigeErgebnisNurAuswertung(gespeichert) {
+    const maximum = RUNDEN_JE_SPIEL * STUFEN[0].wert;
+    const rang = RAENGE.find(r => gespeichert.p / maximum >= r.ab);
+
+    zeigeSchirm('ende');
+    $('ende-modus').textContent = `Schrift des Tages · ${Tagesspiel.lesbar(spiel.datum)}`;
+    $('zeugnis-rang').textContent = rang.titel;
+    $('zeugnis-punkte').textContent = zahl(gespeichert.p);
+    const namen = gespeichert.n || [];
+    $('protokoll').innerHTML = gespeichert.s.map((stufe, i) => `
+      <li class="protokoll__zeile${stufe < 0 ? ' protokoll__zeile--daneben' : ''}">
+        <span class="protokoll__nr">${i + 1}</span>
+        ${namen[i] ? `<span class="protokoll__schrift" style="font-family:'${namen[i]}', serif">${namen[i]}</span>` : ''}
+        <span class="protokoll__stufe">${stufe < 0 ? 'nicht erkannt' : 'auf Stufe ' + (stufe + 1)}</span>
+      </li>`).join('');
+    $('orden').innerHTML = '';
+    $('bestwert-ende').textContent = '';
+    $('tagesauswertung').hidden = false;
+    $('stufe-wechseln-knopf').hidden = true;
+    $('nochmal-knopf').hidden = true;
+    zeigeTagesauswertung();
+  }
+
+  /** Ein Kästchen je Runde: je früher erkannt, desto grüner. */
+  function tagesraster(stufen) {
+    return stufen.map(stufe => {
+      if (stufe < 0) return '🟥';
+      if (stufe <= 1) return '🟩';
+      if (stufe <= 3) return '🟨';
+      return '🟧';
+    }).join('');
   }
 
   function ergebnisKopieren() {
-    const text = [
-      `findthefont · Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
-      `${spiel.punkte} Punkte — ${$('zeugnis-rang').textContent}`,
-      ...spiel.protokoll.map((p, i) =>
-        `${i + 1}. ${p.schrift.n} — ${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'nicht erkannt'} (${p.punkte} P.)`)
-    ].join('\n');
+    let text;
+
+    if (spiel.modus === 'taeglich') {
+      const gespeichert = Tagesspiel.hole(spiel.datum);
+      const stufen = spiel.protokoll.length
+        ? spiel.protokoll.map(p => p.richtig ? p.stufe : -1)
+        : (gespeichert ? gespeichert.s : []);
+      text = [
+        `findthefont · Schrift des Tages ${Tagesspiel.lesbar(spiel.datum)}`,
+        `${tagesraster(stufen)}  ${zahl(spiel.punkte)} Punkte`,
+        'https://rosinenschnecke.github.io/findthefont/'
+      ].join('\n');
+    } else {
+      text = [
+        `findthefont · Schwierigkeit ${SCHWIERIGKEIT[spiel.stufe].name}`,
+        `${spiel.punkte} Punkte — ${$('zeugnis-rang').textContent}`,
+        ...spiel.protokoll.map((p, i) =>
+          `${i + 1}. ${p.schrift.n} — ${p.richtig ? 'Stufe ' + (p.stufe + 1) : 'nicht erkannt'} (${p.punkte} P.)`)
+      ].join('\n');
+    }
 
     const fertig = () => {
       const k = $('kopieren-knopf');
@@ -800,16 +994,18 @@
   /* ---------------- Verlassen ---------------- */
 
   async function zurueckZumMenue() {
-    if (spiel.laeuft && spiel.modus === 'klassisch' && !spiel.warteAufWeiter) {
+    if (spiel.laeuft && spiel.modus !== 'training' && !spiel.warteAufWeiter) {
       const ja = await frage('Spiel abbrechen?',
         'Das laufende Spiel wird verworfen und die Punkte gehen verloren.', 'Abbrechen und zurück');
       if (!ja) return;
     }
     spiel.laeuft = false;
     stoppeUhr();
+    clearInterval(uhrBisMorgen);
     $('aufloesung').hidden = true;
     spiel.warteAufWeiter = false;
     zeigeBestenliste();
+    zeigeTageskarte();
     zeigeSchirm('menue');
   }
 
@@ -875,6 +1071,7 @@
         'Alle gespeicherten Bestwerte werden entfernt. Das lässt sich nicht rückgängig machen.', 'Löschen');
       if (!ja) return;
       Object.keys(SCHWIERIGKEIT).forEach(k => localStorage.removeItem(bestSchluessel(k)));
+      Tagesspiel.loesche();
       zeigeBestenliste();
       zeigeStufenBestwert();
       $('einstellungen-fuss').textContent = 'Bestwerte gelöscht.';
@@ -893,6 +1090,7 @@
 
     /* Startseite */
     $('karte-spiel').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('schwierigkeit'); });
+    $('karte-taeglich').addEventListener('click', starteTagesspiel);
     $('karte-training').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('training'); });
     $('karte-anleitung').addEventListener('click', () => { Sfx.taste(); zeigeSchirm('anleitung'); });
     $('karte-einstellungen').addEventListener('click', () => { Sfx.taste(); oeffneEinstellungen(); });

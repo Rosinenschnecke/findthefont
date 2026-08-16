@@ -33,7 +33,8 @@ statische Webspace.
 
 | Bereich | Inhalt |
 |---|---|
-| **Spiel** | 5 Runden mit Punkten, Zeitlimit und Endergebnis |
+| **Schrift des Tages** | Jeden Tag dieselben fünf Schriften, einmal spielbar, mit Auswertung |
+| **Freies Spiel** | 5 Runden mit Punkten, Schwierigkeit wählbar |
 | **Trainingslager** | Üben ohne Punkte und Zeitdruck, dazu ein durchsuchbarer Schriftenkatalog |
 | **Anleitung** | Stufen und Punkte, in aufklappbaren Kästen |
 | **Einstellungen** | Lautstärke für Musik und Soundeffekte, Animationen, Bestwerte |
@@ -71,6 +72,31 @@ Maschine: Das Leuchten darauf wird kürzer, bis es verschwunden ist.
 
 Wie bekannt eine Schrift ist, steht in `js/fonts.js` unter `BEKANNTHEIT`.
 
+### Schrift des Tages
+
+Fünf Schriften, für alle gleich, einmal pro Tag: fünf Antworten, 45 Sekunden,
+zwei Versuche je Runde.
+
+Damit die Aufgabe überall dieselbe ist, kommen zwei Dinge zusammen
+(`js/daily.js`):
+
+* Der Zufall wird **aus dem Datum berechnet** (mulberry32 über einen
+  FNV-Hash des Datums) statt aus `Math.random`. `js/game.js` schaltet dafür
+  seine Zufallsquelle um, sodass auch die gezeigten Wörter identisch sind.
+* Gezogen wird **nur aus den mitgelieferten Schriften**. Welche Systemschriften
+  ein Gerät besitzt, unterscheidet sich — die Aufgabe wäre sonst nicht für alle
+  gleich.
+
+Am Ende gibt es Serie, Verteilung der eigenen Ergebnisse, Verteilung der
+Stufen, auf denen erkannt wurde, und einen Zähler bis zum nächsten Tag. Der
+Teilen-Text ist ein Kästchenraster: 🟩 auf Stufe 1–2, 🟨 auf 3–4, 🟧 später,
+🟥 nicht erkannt.
+
+**Kein Vergleich mit anderen Spielern.** Die Seite läuft ohne Server; es gibt
+keine fremden Ergebnisse, mit denen sich rechnen ließe. Verglichen wird
+deshalb mit den eigenen bisherigen Tagen, und die Auswertung sagt das auch so.
+Ein echter Vergleich bräuchte einen Endpunkt, der Ergebnisse sammelt.
+
 **Tastatur:** `1`–`8` wählen eine Antwort, `Leertaste` deckt auf bzw. blättert
 weiter, `Esc` schließt Fenster.
 
@@ -84,6 +110,7 @@ css/schriften.css     @font-face-Regeln — erzeugt, nicht von Hand pflegen
 fonts/                Mitgelieferte Schriftdateien (.woff2)
 assets/musik/         Hintergrundmusik
 js/fonts.js           Schriftenkatalog: Gattung, Herkunft, Notiz, Bekanntheit
+js/daily.js           Schrift des Tages: Datum, Zufallssaat, Verlauf, Statistik
 js/settings.js        Einstellungen, im Browser gespeichert
 js/audio.js           Soundeffekte (Web Audio, synthetisch erzeugt)
 js/music.js           Hintergrundmusik in Dauerschleife

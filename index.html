@@ -62,10 +62,16 @@
       <p class="einleitung">Zuerst siehst du nur einen Punkt. Je weniger du aufdeckst, desto mehr Punkte.</p>
 
       <div class="menuekarten">
-        <button class="menuekarte menuekarte--haupt" id="karte-spiel" type="button">
+        <button class="menuekarte menuekarte--haupt" id="karte-taeglich" type="button">
+          <span class="menuekarte__symbol" aria-hidden="true">★</span>
+          <span class="menuekarte__titel">Schrift des Tages</span>
+          <span class="menuekarte__text" id="karte-taeglich-text">Für alle dieselben fünf Schriften</span>
+          <span class="menuekarte__marke" id="karte-taeglich-serie" hidden></span>
+        </button>
+        <button class="menuekarte" id="karte-spiel" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">▶</span>
-          <span class="menuekarte__titel">Spiel starten</span>
-          <span class="menuekarte__text">5 Runden, mit Punkten</span>
+          <span class="menuekarte__titel">Freies Spiel</span>
+          <span class="menuekarte__text">5 Runden, Schwierigkeit wählbar</span>
         </button>
         <button class="menuekarte" id="karte-training" type="button">
           <span class="menuekarte__symbol" aria-hidden="true">✎</span>
@@ -118,6 +124,17 @@
           <li>Sind die Fehlversuche aufgebraucht, endet die Runde ohne Punkte.</li>
           <li>Ab „Schwer“ wird die falsche Antwort durch eine neue ersetzt.</li>
           <li>Die Schwierigkeit multipliziert die Punkte jeder Runde.</li>
+        </ul>
+      </details>
+
+      <details class="infokasten">
+        <summary>Schrift des Tages</summary>
+        <ul class="fliessliste">
+          <li>Jeden Tag dieselben fünf Schriften — für alle gleich.</li>
+          <li>Fünf Antworten, 45 Sekunden, zwei Versuche je Runde.</li>
+          <li>Einmal am Tag; danach zeigt die Karte dein Ergebnis.</li>
+          <li>Am Ende siehst du, wie der Tag im Vergleich zu deinen
+              bisherigen ausfällt.</li>
         </ul>
       </details>
 
@@ -272,6 +289,34 @@
         <ol class="protokoll" id="protokoll"></ol>
         <div class="orden" id="orden"></div>
 
+        <div id="tagesauswertung" hidden>
+          <ul class="kennzahlen">
+            <li><b id="serie-aktuell">0</b><small>Tage in Folge</small></li>
+            <li><b id="serie-laengste">0</b><small>längste Serie</small></li>
+            <li><b id="serie-tage">0</b><small>Tage gespielt</small></li>
+          </ul>
+
+          <h2 class="abschnittstitel">Wie deine Ergebnisse verteilt sind</h2>
+          <div class="diagramm" id="punkteverteilung"></div>
+          <p class="diagramm__fuss" id="prozentrang"></p>
+
+          <h2 class="abschnittstitel">Auf welcher Stufe du erkennst</h2>
+          <div class="diagramm" id="stufenverteilung"></div>
+          <p class="diagramm__fuss">Über alle bisherigen Tage · ✗ = nicht erkannt</p>
+
+          <p class="countdown" id="naechster-tag"></p>
+
+          <details class="infokasten infokasten--eng">
+            <summary>Warum kein Vergleich mit anderen Spielern?</summary>
+            <p class="fliesstext">
+              Die Seite läuft ohne Server: Alles, was du spielst, bleibt in
+              deinem Browser. Damit gibt es keine Ergebnisse anderer Leute,
+              mit denen sich rechnen ließe — verglichen wird deshalb mit
+              deinen eigenen bisherigen Tagen.
+            </p>
+          </details>
+        </div>
+
         <div class="knopfreihe">
           <button id="nochmal-knopf" class="hauptknopf" type="button">Nochmal</button>
           <button id="stufe-wechseln-knopf" class="nebenknopf" type="button">Schwierigkeit</button>
@@ -366,6 +411,7 @@
 </footer>
 
 <script src="js/fonts.js"></script>
+<script src="js/daily.js"></script>
 <script src="js/settings.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/music.js"></script>
